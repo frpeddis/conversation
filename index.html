@@ -8,9 +8,9 @@
 <title>Conversation Companion</title>
 <style>
   :root{
-    --bg:#070710; --bg2:#101022; --card:#16162c; --card2:#1d1d3a; --card3:#242449;
-    --accent:#7c5cff; --accent2:#00d4ff; --accent3:#b06bff; --hot:#ff4d6d;
-    --txt:#f2f2fb; --mut:#8888ad; --line:rgba(255,255,255,.08);
+    --bg:#04102b; --bg-b:#2f74bd; --bg2:#0c2b5c; --card:#13233f; --card2:#1a3155; --card3:#234070;
+    --accent:#4f8cff; --accent2:#37d6ff; --accent3:#6aa8ff; --hot:#ff4d6d;
+    --txt:#f2f6ff; --mut:#9db3d6; --line:rgba(255,255,255,.10);
     --ok:#3ddc97; --gold:#ffd166;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -18,9 +18,9 @@
   body{
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;
     background:
-      radial-gradient(110% 70% at 80% -10%, rgba(176,107,255,.18) 0%, transparent 55%),
-      radial-gradient(120% 80% at 10% -5%, rgba(0,212,255,.12) 0%, transparent 50%),
-      radial-gradient(140% 100% at 50% 0%, #1a1640 0%, var(--bg) 60%);
+      radial-gradient(120% 70% at 80% -10%, rgba(90,170,255,.22) 0%, transparent 55%),
+      radial-gradient(120% 80% at 10% -5%, rgba(0,212,255,.16) 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg) 0%, #0c2b5c 42%, #1a4d8f 72%, var(--bg-b) 100%);
     color:var(--txt);overflow:hidden;position:fixed;inset:0;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
@@ -65,6 +65,24 @@
   .ov-hd .ti{font-size:14px;font-weight:800;letter-spacing:-.2px}
   .ov-hd .tm{font-size:10px;color:var(--mut);margin-left:auto}
   .ov-recap{font-size:13.5px;line-height:1.6;color:#e6e6f4;margin-bottom:14px}
+  .ov-sections{margin:0 0 14px}
+  .ov-sec{background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px}
+  .ov-sec-hd{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:800;letter-spacing:-.2px;color:#eaf1ff;margin-bottom:6px}
+  .ov-sec-n{width:21px;height:21px;flex:none;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:800;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .ov-sec-sum{font-size:12.5px;line-height:1.55;color:#d6dffa;margin-bottom:6px}
+  .ov-sec .ov-bul{margin:0}
+  .ov-sec .ov-bul li{padding:5px 0 5px 20px;font-size:12px}
+  .ov-sec .ov-bul li::before{top:11px}
+  .ov-bul{list-style:none;margin:0 0 14px;padding:0}
+  .ov-bul li{position:relative;padding:7px 0 7px 22px;font-size:13px;line-height:1.55;color:#dcdcec;border-bottom:1px solid rgba(255,255,255,.05)}
+  .ov-bul li:last-child{border-bottom:0}
+  .ov-think{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mut);padding:8px 0 4px}
+  .ov-think .sp{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.15);
+    border-top-color:var(--accent2);animation:spin .8s linear infinite;flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ov-bul li::before{content:"";position:absolute;left:4px;top:13px;width:7px;height:7px;border-radius:2px;
+    background:linear-gradient(135deg,var(--accent2),var(--accent));box-shadow:0 0 8px rgba(0,212,255,.5)}
   .ov-q{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.22);
     border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:8px;
     font-size:13.5px;line-height:1.5;animation:qin .45s ease both;transition:.2s}
@@ -78,8 +96,20 @@
   .live::before{content:"";position:absolute;inset:0;background:radial-gradient(60% 100% at 0% 0%,rgba(0,212,255,.12),transparent 60%);pointer-events:none}
   .live .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent2);font-weight:800;margin-bottom:7px;display:flex;align-items:center;gap:6px}
   .live .lbl .bd{width:7px;height:7px;border-radius:50%;background:var(--hot);animation:pl 1.4s infinite}
-  .live .txt{font-size:15px;line-height:1.55;min-height:22px}
+  .live .txt{font-size:15px;line-height:1.55;min-height:22px;max-height:42vh;overflow-y:auto;scroll-behavior:smooth}
+  .live .txt::-webkit-scrollbar{display:none}
   .live .interim{color:var(--mut);font-style:italic}
+  /* Speaker colors — bright, high-contrast against the dark cards */
+  .sp-0{color:#7ee0ff}.sp-1{color:#ffd166}.sp-2{color:#5effa0}
+  .sp-3{color:#ff9ecb}.sp-4{color:#c4a8ff}.sp-5{color:#ffb270}
+  [class^="sp-"]{transition:color .2s}
+  /* Recapped section: the transcript chunk that fed a recap, tinted by section */
+  .seg-sec{border:1px solid;border-radius:12px;padding:8px 11px;margin-bottom:9px}
+  .seg-sec.flash{animation:secflash .9s ease}
+  @keyframes secflash{0%{filter:brightness(1.9)}100%{filter:none}}
+  .seg-sec-tag{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+  .seg-sec-tx{font-size:14px;line-height:1.55}
+  .seg-live{font-size:15px;line-height:1.55}
   .cursor{display:inline-block;width:2px;height:16px;background:var(--accent2);margin-left:1px;vertical-align:middle;animation:bk 1s steps(2) infinite}
   @keyframes bk{0%,50%{opacity:1}51%,100%{opacity:0}}
 
@@ -90,7 +120,7 @@
   .chap{background:var(--card);border:1px solid var(--line);border-radius:18px;margin-bottom:12px;
     overflow:hidden;animation:rise .5s cubic-bezier(.2,.8,.2,1) both;position:relative}
   .chap::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
-    background:linear-gradient(var(--accent),var(--accent2));opacity:.8}
+    background:linear-gradient(var(--secac,var(--accent)),var(--secac,var(--accent2)));opacity:.9}
   @keyframes rise{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
   .chap-hd{display:flex;align-items:center;gap:11px;padding:14px 15px;cursor:pointer;user-select:none}
   .chap-num{width:32px;height:32px;flex:none;border-radius:10px;display:grid;place-items:center;
@@ -135,7 +165,7 @@
 
   /* Bottom bar */
   .bar{position:absolute;left:0;right:0;bottom:0;padding:14px 18px calc(20px + env(safe-area-inset-bottom));
-    background:linear-gradient(0deg,var(--bg) 40%,rgba(7,7,16,0));display:flex;align-items:center;justify-content:center;gap:22px;z-index:15}
+    background:linear-gradient(0deg,var(--bg-b) 38%,rgba(47,116,189,0));display:flex;align-items:center;justify-content:center;gap:14px;z-index:15}
 
   .rec{position:relative;width:80px;height:80px;border-radius:50%;border:0;cursor:pointer;
     background:linear-gradient(135deg,var(--hot),#ff7a5c);color:#fff;display:grid;place-items:center;
@@ -151,10 +181,10 @@
   .wave{display:flex;align-items:center;gap:3px;height:42px;width:66px;justify-content:center}
   .wave i{width:3.5px;border-radius:3px;background:linear-gradient(var(--accent2),var(--accent));height:6px;transition:height .1s}
 
-  .side{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px}
-  .side small{font-size:10px;color:var(--mut);font-weight:700}
-  .ghost{background:var(--card);border:1px solid var(--line);color:var(--txt);width:52px;height:52px;
-    border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:19px;transition:.2s}
+  .side{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px}
+  .side small{font-size:9.5px;color:var(--mut);font-weight:700}
+  .ghost{background:var(--card);border:1px solid var(--line);color:var(--txt);width:48px;height:48px;
+    border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:18px;transition:.2s}
   .ghost:active{transform:scale(.9)}
 
   .toast{position:absolute;left:50%;top:62px;transform:translateX(-50%) translateY(-20px);
@@ -174,9 +204,8 @@
       <div><h1 id="t-title">Companion</h1><p id="t-tag">Live conversation intelligence</p></div>
     </div>
     <div class="lang" id="lang">
-      <button data-l="auto">AUTO</button>
-      <button data-l="it">IT</button>
       <button data-l="en" class="on">EN</button>
+      <button data-l="it">IT</button>
     </div>
   </div>
 
@@ -205,14 +234,18 @@
       <div class="ghost" id="clear" title="Reset">⟲</div>
       <small id="t-reset">Reset</small>
     </div>
+    <div class="side">
+      <div class="ghost" id="copy" title="Copy transcript">⧉</div>
+      <small id="t-copy">Copy</small>
+    </div>
     <button class="rec" id="rec" aria-label="Record">
       <span class="ring"></span>
       <span class="wave" id="wave" style="display:none"></span>
       <span class="ico" id="ico"></span>
     </button>
     <div class="side">
-      <div class="ghost" id="export" title="Export">↧</div>
-      <small id="t-export">Export</small>
+      <div class="ghost" id="export" title="Export Word">↧</div>
+      <small id="t-export">Word</small>
     </div>
   </div>
 </div>
@@ -221,40 +254,84 @@
 
 <script>
 /* ============================================================
-   CONFIG — plug your own analysis API here later.
-   Set API.enabled=true and fill endpoint to override the
-   on-device engine. Endpoint receives {text, lang, mode}
-   ("mode" is "chapter" or "overview") and should return:
-     chapter  -> { title, recap, questions:[...] }
-     overview -> { recap, questions:[q1,q2,q3] }
+   LLM — Claude called DIRECTLY inside the app via the artifact
+   runtime feature `window.claude.complete`. When the app runs
+   inside the Claude environment, recaps and smart questions are
+   generated by Claude itself. When that feature isn't present
+   (e.g. a copy opened as a plain local/static file), the
+   on-device heuristic engine takes over as a silent fallback so
+   the app still works end-to-end without ever exiting.
    ============================================================ */
-const API = {
-  enabled:false, endpoint:"",
-  async analyze(text, lang, mode){
-    const r=await fetch(this.endpoint,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({text,lang,mode})});
-    return await r.json();
+const LLM = {
+  // True only when the Claude artifact completion feature is available.
+  get enabled(){ return typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
+
+  async call(text, lang, mode){
+    const {system,user}=buildPrompt(text,lang,mode);
+    // window.claude.complete takes a single prompt string and returns text.
+    const prompt = system + "\n\n" + user + "\n\nReturn ONLY the JSON object described above. No prose, no markdown, no backticks.";
+    const raw = await window.claude.complete(prompt);
+    return parseJson(raw);
   }
 };
+
+/* Prompt engineering — tuned for specific, substantive output */
+function buildPrompt(text, lang, mode){
+  const L = lang==="it" ? "Italian" : "English";
+  const langRule = `Write ALL output text in ${L}, regardless of the transcript's language.`;
+  if(mode==="chapter"){
+    return {
+      system:`You analyze a short segment of a live conversation transcript (one topic/chapter). ${langRule} `+
+        `The text is auto-generated speech-to-text and may have errors — infer intent. `+
+        `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
+        `{"title": 3-6 word specific title, "recap": 2-3 substantive sentences capturing substance, decisions and open issues, `+
+        `"questions": [3 sharp non-generic follow-up questions referencing concrete details from this segment; no yes/no, no filler]}`,
+      user:`Transcript segment:\n"""${text}"""`
+    };
+  }
+  return {
+    system:`You produce an EXTENSIVE structured recap of the ENTIRE conversation, from the very beginning to now, organized into coherent thematic sections in chronological order. ${langRule} `+
+      `The text is auto-generated speech-to-text and may have errors — infer intent. `+
+      `Be concrete: capture decisions, arguments, data points, disagreements, action items, open questions. Avoid generic phrasing and topic labels. `+
+      `Split the conversation into 2-6 coherent sections, each covering a distinct topic or phase. `+
+      `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
+      `{"recap": rich 3-5 sentence narrative of the whole conversation and how it evolved, `+
+      `"sections": [{"title": 3-6 word specific section heading, "summary": 2-4 substantive sentences capturing the decisions, facts and open issues of this part, "points": [2-5 concrete, information-dense bullet points]}], `+
+      `"questions": [exactly 3 important forward-looking questions to ask next, specific to the actual content]}`,
+    user:`Full conversation transcript:\n"""${text}"""`
+  };
+}
+function parseJson(s){
+  if(!s)return null;
+  let t=s.trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+  try{return JSON.parse(t);}catch(e){}
+  const m=t.match(/\{[\s\S]*\}/);
+  if(m){try{return JSON.parse(m[0]);}catch(e){}}
+  return null;
+}
 
 /* ---------- i18n ---------- */
 const I18N={
   en:{tag:"Live conversation intelligence",empty:"Record a meeting, interview, or call.<br>It transcribes live, splits into chapters by topic,<br>and suggests smart questions as you go.",
-    reset:"Reset",export:"Export",listening:"Listening…",ready:"Tap record to begin",stopped:"Stopped",
+    reset:"Reset",export:"Word",copy:"Copy",listening:"Listening…",ready:"Tap record to begin",stopped:"Stopped",
     chapter:"Chapter",questions:"Smart questions",transcript:"Show transcript",recapbtn:"Recap so far",
-    ovTitle:"Recap so far",topq:"Top 3 questions",
+    ovTitle:"Recap so far",topq:"Top 3 questions",keypoints:"Key points",
+    bysection:"Recap by section",fulltranscript:"Full transcript",speaker:"Speaker",
     noSupport:"Speech recognition isn't supported here. Use Safari on iPhone or Chrome.",
     mic:"Mic blocked. Allow microphone access in Settings → Safari.",cleared:"Cleared",exported:"Exported",
     autoStart:"Auto-detecting language…",words:"words",qCopied:"Question copied",noContent:"Keep talking — not enough yet for a recap.",
-    updated:"Recap updated"},
+    updated:"Recap updated",thinking:"Analyzing the full conversation…",
+    transcriptCopied:"Transcript copied to clipboard",nothingYet:"Nothing to copy yet"},
   it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Registra una riunione, intervista o chiamata.<br>Trascrive dal vivo, divide in capitoli per argomento<br>e propone domande intelligenti.",
-    reset:"Reset",export:"Esporta",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
+    reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
-    ovTitle:"Riepilogo finora",topq:"3 domande chiave",
+    ovTitle:"Riepilogo finora",topq:"3 domande chiave",keypoints:"Punti chiave",
+    bysection:"Riepilogo per sezioni",fulltranscript:"Trascrizione completa",speaker:"Interlocutore",
     noSupport:"Riconoscimento vocale non supportato. Usa Safari su iPhone o Chrome.",
     mic:"Microfono bloccato. Consenti l'accesso in Impostazioni → Safari.",cleared:"Cancellato",exported:"Esportato",
     autoStart:"Rilevamento lingua…",words:"parole",qCopied:"Domanda copiata",noContent:"Continua a parlare — non c'è ancora abbastanza per un riepilogo.",
-    updated:"Riepilogo aggiornato"}
+    updated:"Riepilogo aggiornato",thinking:"Analisi dell'intera conversazione…",
+    transcriptCopied:"Trascrizione copiata",nothingYet:"Niente da copiare ancora"}
 };
 let uiLang="en";
 function applyUI(){
@@ -262,15 +339,43 @@ function applyUI(){
   document.getElementById("t-tag").innerHTML=d.tag;
   document.getElementById("t-empty").innerHTML=d.empty;
   document.getElementById("t-reset").textContent=d.reset;
+  document.getElementById("t-copy").textContent=d.copy;
   document.getElementById("t-export").textContent=d.export;
   document.getElementById("t-recapbtn").textContent=d.recapbtn;
 }
 
 /* ---------- State ---------- */
-let recog=null, recording=false, langMode="en", recLang="en-US";
+let recog=null, recording=false, langMode="en";
 let interim="", chapters=[], curBuf="", fullText="", lastTs=0;
 let audioCtx=null, analyser=null, rafId=null, micStream=null, micReady=false;
-let isFirstChapter=true;
+let isFirstChapter=true, lastOverview=null;
+/* Speaker diarization (heuristic, voice-pitch based) */
+let segments=[];            // current buffer split into {speaker,text} pieces
+let speakers=[];            // [{pitch, count}] running pitch centroid per detected speaker
+let pitchSamples=[];        // recent voiced f0 samples {t,f} for the utterance in progress
+let lastUtteranceEnd=0, lastSpeaker=0;
+const SPEAKER_TOL=28;       // Hz: closer than this to a known speaker → same person
+/* Bright colors for the dark in-app cards; darker variants for the white Word export. */
+const PALETTE=[
+  {css:"sp-0",app:"#7ee0ff",word:"#0b6e8c"},
+  {css:"sp-1",app:"#ffd166",word:"#8a5d00"},
+  {css:"sp-2",app:"#5effa0",word:"#0a7d43"},
+  {css:"sp-3",app:"#ff9ecb",word:"#a83275"},
+  {css:"sp-4",app:"#c4a8ff",word:"#5a3fb0"},
+  {css:"sp-5",app:"#ffb270",word:"#9a521a"}
+];
+const pc=i=>PALETTE[((i%PALETTE.length)+PALETTE.length)%PALETTE.length];
+let liveSpeaker=0;          // best-guess speaker for the text being spoken right now
+/* Per-section background tints — link a recapped transcript chunk to its recap card. */
+const SECTION_TINTS=[
+  {bg:"rgba(79,140,255,.15)", bd:"rgba(79,140,255,.55)", tx:"#a9caff", ac:"#4f8cff"},
+  {bg:"rgba(61,220,151,.13)", bd:"rgba(61,220,151,.55)", tx:"#86f0bd", ac:"#3ddc97"},
+  {bg:"rgba(255,209,102,.14)",bd:"rgba(255,209,102,.55)",tx:"#ffe39a", ac:"#ffd166"},
+  {bg:"rgba(255,158,203,.14)",bd:"rgba(255,158,203,.55)",tx:"#ffc2dd", ac:"#ff9ecb"},
+  {bg:"rgba(176,107,255,.16)",bd:"rgba(176,107,255,.55)",tx:"#cdb0ff", ac:"#b06bff"},
+  {bg:"rgba(0,212,255,.13)",  bd:"rgba(0,212,255,.55)",  tx:"#93e9ff", ac:"#00d4ff"}
+];
+const sectionTint=i=>SECTION_TINTS[((i%SECTION_TINTS.length)+SECTION_TINTS.length)%SECTION_TINTS.length];
 
 const $=s=>document.querySelector(s);
 const scroll=$("#scroll"),chaptersEl=$("#chapters"),liveCard=$("#liveCard"),liveTxt=$("#liveTxt"),
@@ -279,11 +384,6 @@ const scroll=$("#scroll"),chaptersEl=$("#chapters"),liveCard=$("#liveCard"),live
 
 function tt(m){toast.textContent=m;toast.classList.add("show");clearTimeout(tt._t);tt._t=setTimeout(()=>toast.classList.remove("show"),2200);}
 function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-
-/* ---------- Language detection ---------- */
-const IT_HINT=/\b(che|non|per|sono|della|come|più|però|quindi|allora|grazie|prego|abbiamo|questo|quella|perché|anche|fare|essere|molto|bene|ciao|adesso|cosa|gli|nostro|vostra|delle|nella|sulla)\b/gi;
-const EN_HINT=/\b(the|and|that|with|have|this|from|they|what|because|should|would|about|there|which|their|going|really|thanks|okay|right|think|need|want|these|those)\b/gi;
-function detect(t){const it=(t.match(IT_HINT)||[]).length,en=(t.match(EN_HINT)||[]).length;return it>en?"it":"en";}
 
 /* ---------- Analysis engine ---------- */
 const STOP_EN=new Set("the a an and or but to of in on at for with is are was were be been being it this that these those i you he she we they my your our their as so if then than have has had do does did will would can could should not no yes ok okay just really very much more most some any all what when where why how who which about into out up down over here also gonna wanna kind sort like well yeah".split(" "));
@@ -343,14 +443,61 @@ function makeQuestions(text,lang,count){
 }
 
 async function analyzeChapter(text){
-  const lang=langMode==="auto"?detect(text):(langMode==="it"?"it":"en");
-  if(API.enabled){try{const r=await API.analyze(text,lang,"chapter");return{...r,lang,text};}catch(e){}}
+  const lang=langMode==="it"?"it":"en";
+  if(LLM.enabled){try{const r=await LLM.call(text,lang,"chapter");
+    if(r&&r.title&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,text,_src:"llm"};}catch(e){}}
   return{title:makeTitle(text,lang),recap:makeRecap(text,lang,210),questions:makeQuestions(text,lang,3),lang,text};
 }
+function makeBullets(text,lang){
+  // Build an extensive, ordered set of bullet points spanning the whole transcript.
+  const sents=sentencesOf(text);
+  if(!sents.length)return [];
+  const k=new Set(keywords(text,lang,14));
+  // score every sentence, keep the informative ones, preserve original order
+  const scored=sents.map((s,i)=>{
+    let sc=0;wordsOf(s).forEach(w=>{if(k.has(w))sc++;});
+    return {s,i,sc:sc+Math.min(s.length/110,1.2)};
+  });
+  // dynamic target: ~1 bullet per 2 sentences, min 5, max 18
+  const target=Math.max(5,Math.min(18,Math.round(sents.length/2)));
+  const picked=scored.slice().sort((a,b)=>b.sc-a.sc).slice(0,target)
+    .sort((a,b)=>a.i-b.i);
+  // de-dupe near-identical bullets
+  const out=[],seen=[];
+  for(const o of picked){
+    const sig=wordsOf(o.s).filter(w=>k.has(w)).slice(0,4).join(" ");
+    if(seen.includes(sig)&&sig)continue;seen.push(sig);
+    let b=o.s.replace(/\s+/g," ").trim();
+    b=b.charAt(0).toUpperCase()+b.slice(1);
+    out.push(b);
+  }
+  return out;
+}
+function makeSections(lang){
+  // Build coherent sections from the whole conversation, in order.
+  // Each committed chapter is already a coherent topic → one section.
+  const secs=chapters.map(c=>({
+    title:c.title,
+    summary:c.recap,
+    points:makeBullets(c.text,lang).slice(0,4)
+  }));
+  // Include the uncommitted tail (current buffer) as a final section if it has substance.
+  const tail=curBuf.trim();
+  if(tail.split(/\s+/).filter(Boolean).length>=MIN_WORDS){
+    secs.push({title:makeTitle(tail,lang),summary:makeRecap(tail,lang,220),points:makeBullets(tail,lang).slice(0,4)});
+  }
+  // If nothing was chaptered yet, derive a single section from everything captured.
+  if(!secs.length){
+    const t=allText();
+    if(t)secs.push({title:makeTitle(t,lang),summary:makeRecap(t,lang,260),points:makeBullets(t,lang).slice(0,6)});
+  }
+  return secs;
+}
 async function analyzeOverview(text){
-  const lang=langMode==="auto"?detect(text):(langMode==="it"?"it":"en");
-  if(API.enabled){try{const r=await API.analyze(text,lang,"overview");return{...r,lang};}catch(e){}}
-  return{recap:makeRecap(text,lang,360),questions:makeQuestions(text,lang,3),lang};
+  const lang=langMode==="it"?"it":"en";
+  if(LLM.enabled){try{const r=await LLM.call(text,lang,"overview");
+    if(r&&r.recap&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,_src:"llm"};}catch(e){}}
+  return{recap:makeRecap(text,lang,300),sections:makeSections(lang),questions:makeQuestions(text,lang,3),lang};
 }
 
 /* ---------- Concept-based chapter splitting ----------
@@ -369,7 +516,7 @@ function topicShift(){
   if(sents.length<3)return false;
   const recent=sents.slice(-2).join(" ");
   const earlier=sents.slice(0,-2).join(" ");
-  const lang=langMode==="auto"?detect(curBuf):(langMode==="it"?"it":"en");
+  const lang=langMode==="it"?"it":"en";
   const a=contentSet(earlier,lang),b=contentSet(recent,lang);
   if(b.size<3)return false;
   let overlap=0;b.forEach(w=>{if(a.has(w))overlap++;});
@@ -383,12 +530,18 @@ async function commitChapter(){
   const text=curBuf.trim();
   const w=text.split(/\s+/).filter(Boolean).length;
   if(w<MIN_WORDS){return;} // too small, keep accumulating
-  curBuf="";
-  const a=await analyzeChapter(text);
-  chapters.push({id:Date.now(),title:a.title,recap:a.recap,questions:a.questions,text:a.text,lang:a.lang,words:w,isNew:true});
+  const segs=segments.slice();   // capture speaker-tagged transcript for this chapter
+  curBuf="";segments=[];
+  // Push the section immediately (pending) so the transcript window keeps showing
+  // everything while the recap is being generated; fill in title/recap when ready.
+  const ch={id:Date.now(),title:"",recap:"",questions:[],text,lang:(langMode==="it"?"it":"en"),words:w,segments:segs,isNew:false,pending:true};
+  chapters.push(ch);
   isFirstChapter=false;
-  refreshChapters();
-  setTimeout(()=>{chapters.forEach(c=>c.isNew=false);},1600);
+  refreshChapters();renderLive();
+  const a=await analyzeChapter(text);
+  Object.assign(ch,{title:a.title,recap:a.recap,questions:a.questions,text:a.text,lang:a.lang,pending:false,isNew:true});
+  refreshChapters();renderLive();   // recap ready → highlight this section + its recap card
+  setTimeout(()=>{ch.isNew=false;refreshChapters();},1600);
 }
 
 function evaluateSplit(pause){
@@ -402,23 +555,25 @@ function evaluateSplit(pause){
 
 /* ---------- Rendering ---------- */
 function renderChapter(ch,i){
-  const d=I18N[uiLang],el=document.createElement("div");
+  const d=I18N[uiLang],el=document.createElement("div"),t=sectionTint(i);
   el.className="chap open";el.dataset.id=ch.id;
+  // match the tint of this section's transcript block so the pairing is obvious
+  el.style.background=t.bg;el.style.borderColor=t.bd;el.style.setProperty("--secac",t.ac);
+  const body=ch.pending
+    ? `<div class="ov-think"><span class="sp"></span>${d.thinking}</div>`
+    : `<div class="recap">${esc(ch.recap)}</div>
+       <div class="qh">✦ ${d.questions}</div>
+       <div class="qs">${ch.questions.map(q=>`<div class="q"><span class="spark">✦</span><span>${esc(q)}</span></div>`).join("")}</div>`;
   el.innerHTML=`
     <div class="chap-hd">
-      <div class="chap-num">${i+1}</div>
+      <div class="chap-num" style="background:${t.ac}">${i+1}</div>
       <div class="chap-meta">
-        <div class="chap-title">${esc(ch.title)}</div>
+        <div class="chap-title">${ch.pending?"…":esc(ch.title)}</div>
         <div class="chap-sub">${d.chapter} · ${ch.words} ${d.words} <span class="pill">${ch.lang.toUpperCase()}</span>${ch.isNew?`<span class="pill new">NEW</span>`:""}</div>
       </div>
       <div class="chev">▶</div>
     </div>
-    <div class="chap-body"><div class="chap-inner">
-      <div class="recap">${esc(ch.recap)}</div>
-      <div class="qh">✦ ${d.questions}</div>
-      <div class="qs">${ch.questions.map(q=>`<div class="q"><span class="spark">✦</span><span>${esc(q)}</span></div>`).join("")}</div>
-      <details class="tr"><summary>${d.transcript}</summary><p>${esc(ch.text)}</p></details>
-    </div></div>`;
+    <div class="chap-body"><div class="chap-inner">${body}</div></div>`;
   el.querySelector(".chap-hd").addEventListener("click",()=>el.classList.toggle("open"));
   el.querySelectorAll(".q").forEach(q=>q.addEventListener("click",()=>{navigator.clipboard?.writeText(q.textContent.trim());tt(I18N[uiLang].qCopied);}));
   return el;
@@ -427,6 +582,7 @@ function refreshChapters(){
   empty.style.display=(chapters.length||recording)?"none":"block";
   chaptersEl.innerHTML="";
   chapters.forEach((c,i)=>chaptersEl.appendChild(renderChapter(c,i)));
+  renderSections();   // keep the tinted transcript blocks in sync with the recap cards
   updateRecapBtn();
 }
 
@@ -444,18 +600,37 @@ async function buildOverview(){
   const text=allText();
   if(text.split(/\s+/).filter(Boolean).length<20){tt(I18N[uiLang].noContent);return;}
   const d=I18N[uiLang];
-  recapBtn.style.opacity=".6";
+  recapBtn.style.opacity=".6";recapBtn.style.pointerEvents="none";
+  // show thinking state if the LLM is in play
+  if(LLM.enabled){
+    overview.style.display="block";
+    overview.innerHTML=`<div class="ov-hd"><div class="ic">✨</div><div class="ti">${d.ovTitle}</div></div>
+      <div class="ov-think"><span class="sp"></span>${d.thinking}</div>`;
+    overview.style.animation="none";void overview.offsetWidth;overview.style.animation="rise .5s cubic-bezier(.2,.8,.2,1) both";
+    scroll.scrollTo({top:0,behavior:"smooth"});
+  }
   const a=await analyzeOverview(text);
-  recapBtn.style.opacity="";
+  lastOverview=a;
+  recapBtn.style.opacity="";recapBtn.style.pointerEvents="";
   const now=new Date().toLocaleTimeString(uiLang==="it"?"it-IT":"en-US",{hour:"2-digit",minute:"2-digit"});
+  // Coherent sections covering the whole conversation (fall back to bullets if an older shape comes back).
+  const sections=Array.isArray(a.sections)?a.sections:[];
+  const sectionsHtml=sections.length
+    ? `<div class="qh" style="margin:4px 0 9px">▸ ${d.bysection}</div><div class="ov-sections">`+
+      sections.map((s,i)=>`<div class="ov-sec">
+          <div class="ov-sec-hd"><span class="ov-sec-n">${i+1}</span>${esc(s.title||"")}</div>
+          ${s.summary?`<div class="ov-sec-sum">${esc(s.summary)}</div>`:""}
+          ${Array.isArray(s.points)&&s.points.length?`<ul class="ov-bul">${s.points.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}
+        </div>`).join("")+`</div>`
+    : (a.bullets&&a.bullets.length?`<div class="qh" style="margin:4px 0 9px">▸ ${d.keypoints}</div><ul class="ov-bul">${a.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`:"");
   overview.style.display="block";
   overview.innerHTML=`
-    <div class="ov-hd"><div class="ic">✨</div><div class="ti">${d.ovTitle}</div><div class="tm">${now} · ${totalWords()} ${d.words}</div></div>
+    <div class="ov-hd"><div class="ic">✨</div><div class="ti">${d.ovTitle}</div><div class="tm">${a._src==="llm"?"AI":"·"} ${now} · ${totalWords()} ${d.words}</div></div>
     <div class="ov-recap">${esc(a.recap)}</div>
+    ${sectionsHtml}
     <div class="qh" style="margin-bottom:9px">★ ${d.topq}</div>
     ${a.questions.slice(0,3).map((q,n)=>`<div class="ov-q"><span class="n">${n+1}</span><span>${esc(q)}</span></div>`).join("")}`;
   overview.querySelectorAll(".ov-q").forEach(q=>q.addEventListener("click",()=>{navigator.clipboard?.writeText(q.textContent.replace(/^\d+/,"").trim());tt(d.qCopied);}));
-  // re-trigger animation
   overview.style.animation="none";void overview.offsetWidth;overview.style.animation="rise .5s cubic-bezier(.2,.8,.2,1) both";
   scroll.scrollTo({top:0,behavior:"smooth"});
   tt(d.updated);
@@ -471,14 +646,82 @@ async function ensureMic(){
     if(!audioCtx){
       audioCtx=new (window.AudioContext||window.webkitAudioContext)();
       const src=audioCtx.createMediaStreamSource(micStream);
-      analyser=audioCtx.createAnalyser();analyser.fftSize=64;src.connect(analyser);
+      analyser=audioCtx.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=.3;src.connect(analyser);
     }
     return true;
   }catch(e){tt(I18N[uiLang].mic);return false;}
 }
 
+/* ---------- Speaker diarization (heuristic) ----------
+   Estimate the speaker's vocal pitch (fundamental frequency, f0) from the live
+   audio via autocorrelation, sampled while someone is talking. Each finalized
+   utterance is matched to the nearest known speaker pitch; if the tone is far
+   enough from every known speaker, it's treated as a NEW person. Same person
+   tends to land near the same pitch → same color. This is approximate, not
+   forensic — it nudges coloring, it doesn't guarantee identity. */
+function detectPitch(){
+  if(!analyser||!analyser.getFloatTimeDomainData)return null;
+  const N=Math.min(1024,analyser.fftSize),buf=new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(buf);
+  let rms=0;for(let i=0;i<N;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/N);
+  if(rms<0.012)return null;                       // too quiet → unvoiced/silence
+  const sr=(audioCtx&&audioCtx.sampleRate)||44100;
+  const minLag=Math.floor(sr/350),maxLag=Math.floor(sr/70);  // human voice 70–350 Hz
+  let bestLag=-1,best=0;
+  for(let lag=minLag;lag<=maxLag;lag++){
+    let c=0;for(let i=0;i<N-lag;i++)c+=buf[i]*buf[i+lag];
+    if(c>best){best=c;bestLag=lag;}
+  }
+  if(bestLag<=0)return null;
+  return sr/bestLag;
+}
+function classifySpeaker(){
+  // median pitch over the samples collected during the utterance just spoken
+  const window=pitchSamples.filter(s=>s.t>=lastUtteranceEnd);
+  lastUtteranceEnd=Date.now();
+  pitchSamples=pitchSamples.filter(s=>s.t>lastUtteranceEnd); // discard samples already attributed
+  if(window.length<2)return lastSpeaker;          // not enough voiced info → keep last speaker
+  const fs=window.map(s=>s.f).sort((a,b)=>a-b);
+  const med=fs[Math.floor(fs.length/2)];
+  let best=-1,bestD=1e9;
+  speakers.forEach((sp,i)=>{const dd=Math.abs(sp.pitch-med);if(dd<bestD){bestD=dd;best=i;}});
+  if(best>=0&&bestD<=SPEAKER_TOL){
+    const sp=speakers[best];sp.pitch=sp.pitch*0.8+med*0.2;sp.count++; // smooth the centroid
+    lastSpeaker=best;return best;
+  }
+  speakers.push({pitch:med,count:1});
+  lastSpeaker=speakers.length-1;return lastSpeaker;
+}
+/* Read-only guess of who is talking RIGHT NOW (last ~1.2s of pitch), so the
+   live text is colored by speaker immediately, before the utterance finalizes. */
+function liveSpeakerGuess(){
+  const recent=pitchSamples.filter(s=>s.t>=Date.now()-1200);
+  if(recent.length<2)return lastSpeaker;
+  const fs=recent.map(s=>s.f).sort((a,b)=>a-b);
+  const med=fs[Math.floor(fs.length/2)];
+  let best=-1,bestD=1e9;
+  speakers.forEach((sp,i)=>{const dd=Math.abs(sp.pitch-med);if(dd<bestD){bestD=dd;best=i;}});
+  if(best>=0&&bestD<=SPEAKER_TOL)return best;
+  return speakers.length;        // tone doesn't match anyone → tentatively the next (new) speaker
+}
+function rebuildCurBuf(){curBuf=segments.map(s=>s.text).join(" ")+(segments.length?" ":"");}
+
 /* ---------- Speech recognition ---------- */
-function pickLang(){return langMode==="it"?"it-IT":langMode==="en"?"en-US":recLang;}
+function pickLang(){return langMode==="it"?"it-IT":"en-US";}
+/* Append a finalized utterance as a speaker-tagged segment. Each final result
+   is a pause in speech, so we close it with a separating dot — capitalizing the
+   sentence and never doubling punctuation the engine may already have added. */
+function appendFinal(t,speaker){
+  t=t.replace(/\s+/g," ").trim();
+  if(!t)return;
+  t=t.charAt(0).toUpperCase()+t.slice(1);
+  if(!/[.!?…]$/.test(t))t+=".";                   // pause/topic change → dot, so sentences split cleanly
+  // merge into the previous segment if the same speaker is still talking
+  const prev=segments[segments.length-1];
+  if(prev&&prev.speaker===speaker)prev.text+=" "+t;
+  else segments.push({speaker,text:t});
+  rebuildCurBuf();
+}
 function startRecog(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){tt(I18N[uiLang].noSupport);return false;}
@@ -488,11 +731,11 @@ function startRecog(){
     for(let i=e.resultIndex;i<e.results.length;i++){
       const r=e.results[i];
       if(r.isFinal){const t=r[0].transcript.trim();
-        if(t){curBuf+=t+". ";lastTs=Date.now();
-          if(langMode==="auto"){recLang=detect(curBuf)==="it"?"it-IT":"en-US";}
+        if(t){appendFinal(t,classifySpeaker());lastTs=Date.now();
           evaluateSplit(false);}
       } else interim+=r[0].transcript;
     }
+    liveSpeaker=interim?liveSpeakerGuess():lastSpeaker;   // color the live text by current tone
     renderLive();updateRecapBtn();
   };
   recog.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){tt(I18N[uiLang].mic);stop();}};
@@ -500,13 +743,48 @@ function startRecog(){
   try{recog.start();}catch(_){}
   return true;
 }
+/* Render a list of {speaker,text} segments with per-speaker colors. */
+function segHtml(segs){
+  return (segs||[]).map(s=>`<span class="${pc(s.speaker).css}">${esc(s.text)}</span>`).join(" ");
+}
+/* The transcript window holds the WHOLE conversation and never empties:
+   committed (recapped) sections as tinted blocks, then the in-progress tail. */
+function ensureLiveStructure(){
+  if(!document.getElementById("segSecWrap"))
+    liveTxt.innerHTML='<div id="segSecWrap"></div><div id="segLive"></div>';
+}
+function renderSections(){
+  ensureLiveStructure();
+  document.getElementById("segSecWrap").innerHTML=chapters.map((c,i)=>{
+    const t=sectionTint(i),flash=(c.isNew&&!c.pending)?" flash":"";
+    const tag=esc(I18N[uiLang].chapter)+" "+(i+1)+(c.pending?" · …":" · "+esc(c.title));
+    const segs=c.segments&&c.segments.length?c.segments:[{speaker:0,text:c.text}];
+    return `<div class="seg-sec${flash}" style="background:${t.bg};border-color:${t.bd}">
+        <div class="seg-sec-tag" style="color:${t.tx}">●&nbsp;${tag}</div>
+        <div class="seg-sec-tx">${segHtml(segs)}</div>
+      </div>`;
+  }).join("");
+}
 function renderLive(){
   liveCard.style.display="block";
-  liveTxt.innerHTML=esc(curBuf.trim())+(interim?` <span class="interim">${esc(interim)}</span>`:"")+`<span class="cursor"></span>`;
+  ensureLiveStructure();
+  const tail=segHtml(segments);
+  const interimHtml=interim?`<span class="${pc(liveSpeaker).css}" style="opacity:.78">${esc(interim)}</span>`:"";
+  const inner=(tail||interimHtml)?`${tail}${tail&&interimHtml?" ":""}${interimHtml}`:"";
+  document.getElementById("segLive").innerHTML=`<div class="seg-live">${inner}<span class="cursor"></span></div>`;
+  liveTxt.scrollTop=liveTxt.scrollHeight;   // keep the latest text in view
 }
 
 /* pause detection */
 setInterval(()=>{if(recording&&curBuf.trim()&&Date.now()-lastTs>PAUSE_MS){evaluateSplit(true);lastTs=Date.now();}},900);
+
+/* sample vocal pitch a few times per second while recording (for speaker coloring) */
+setInterval(()=>{
+  if(!recording)return;
+  const f=detectPitch();
+  if(f)pitchSamples.push({t:Date.now(),f});
+  if(pitchSamples.length>500)pitchSamples.splice(0,pitchSamples.length-500);
+},110);
 
 /* ---------- Waveform ---------- */
 function startWave(){
@@ -514,7 +792,7 @@ function startWave(){
   wave.innerHTML=Array.from({length:9}).map(()=>"<i></i>").join("");
   const bars=[...wave.children],data=new Uint8Array(analyser.frequencyBinCount);
   const loop=()=>{analyser.getByteFrequencyData(data);
-    bars.forEach((b,i)=>{const v=data[i*2]||0;b.style.height=(6+(v/255)*32)+"px";});
+    bars.forEach((b,i)=>{const v=data[2+i*5]||0;b.style.height=(6+(v/255)*32)+"px";});
     rafId=requestAnimationFrame(loop);};
   loop();
 }
@@ -526,10 +804,12 @@ async function start(){
   if(audioCtx&&audioCtx.state==="suspended"){try{await audioCtx.resume();}catch(_){}}
   if(!startRecog())return;
   recording=true;
+  // start a fresh pitch window so stale samples don't bias the first utterance
+  pitchSamples=[];lastUtteranceEnd=Date.now();
   recBtn.classList.add("live");
   wave.style.display="flex";ico.style.display="none";
   dot.classList.add("live");
-  stat.textContent=langMode==="auto"?I18N[uiLang].autoStart:I18N[uiLang].listening;
+  stat.textContent=I18N[uiLang].listening;
   empty.style.display="none";
   startWave();
 }
@@ -545,37 +825,123 @@ function stop(){
   // NOTE: we intentionally do NOT stop micStream tracks, so iOS keeps
   // the permission warm and won't re-prompt on the next recording.
   if(audioCtx&&audioCtx.state==="running"){/* keep ctx alive */}
-  setTimeout(()=>{renderLive();if(!curBuf.trim())liveCard.style.display="none";updateRecapBtn();},300);
+  // keep the transcript window visible if anything was captured (sections or tail)
+  setTimeout(()=>{renderLive();if(!curBuf.trim()&&!chapters.length)liveCard.style.display="none";updateRecapBtn();},300);
 }
 recBtn.addEventListener("click",()=>{recording?stop():start();});
 
+function fullTranscript(){
+  // Joined, readable transcript of everything captured so far.
+  const parts=chapters.map(c=>c.text.trim());
+  if(curBuf.trim())parts.push(curBuf.trim());
+  return parts.join("\n\n").replace(/\s+\./g,".").trim();
+}
+async function copyText(str){
+  try{
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(str);return true;}
+  }catch(e){}
+  // fallback for older iOS Safari
+  try{
+    const ta=document.createElement("textarea");
+    ta.value=str;ta.setAttribute("readonly","");
+    ta.style.position="absolute";ta.style.left="-9999px";
+    document.body.appendChild(ta);
+    ta.select();ta.setSelectionRange(0,str.length);
+    const ok=document.execCommand("copy");document.body.removeChild(ta);return ok;
+  }catch(e){return false;}
+}
+$("#copy").addEventListener("click",async()=>{
+  const t=fullTranscript();
+  if(!t){tt(I18N[uiLang].nothingYet);return;}
+  const ok=await copyText(t);
+  tt(ok?I18N[uiLang].transcriptCopied:I18N[uiLang].nothingYet);
+});
+
 $("#clear").addEventListener("click",()=>{
   if(recording)stop();
-  chapters=[];curBuf="";interim="";isFirstChapter=true;
+  chapters=[];curBuf="";interim="";isFirstChapter=true;lastOverview=null;
+  segments=[];speakers=[];pitchSamples=[];lastUtteranceEnd=0;lastSpeaker=0;liveSpeaker=0;
   liveTxt.innerHTML='<span class="cursor"></span>';liveCard.style.display="none";
   overview.style.display="none";refreshChapters();updateRecapBtn();
   tt(I18N[uiLang].cleared);stat.textContent=I18N[uiLang].ready;
 });
 
 $("#export").addEventListener("click",()=>{
-  const d=I18N[uiLang];let out=`# Companion — ${d.ovTitle}\n\n`;
-  const ov=overview.querySelector(".ov-recap");
-  if(ov){out+=`${ov.textContent}\n\n`;}
-  chapters.forEach((c,i)=>{out+=`## ${i+1}. ${c.title}\n${c.recap}\n\n**${d.questions}:**\n`;
-    c.questions.forEach(q=>out+=`- ${q}\n`);out+=`\n> ${c.text}\n\n`;});
-  if(navigator.clipboard)navigator.clipboard.writeText(out);
-  const blob=new Blob([out],{type:"text/markdown"});const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="conversation.md";a.click();tt(d.exported);
+  const d=I18N[uiLang];
+  const ov=lastOverview;   // use the structured recap built by "Recap so far"
+  const dt=new Date().toLocaleString(uiLang==="it"?"it-IT":"en-US");
+
+  let body=`<h1>Companion &mdash; ${esc(d.ovTitle)}</h1>`;
+  body+=`<p style="color:#666;font-size:11pt">${esc(dt)} &middot; ${totalWords()} ${esc(d.words)}</p>`;
+
+  if(ov && ov.recap){
+    body+=`<h2>${esc(d.ovTitle)}</h2><p>${esc(ov.recap)}</p>`;
+    if(Array.isArray(ov.sections)&&ov.sections.length){
+      body+=`<h3>${esc(d.bysection)}</h3>`;
+      ov.sections.forEach((s,i)=>{
+        body+=`<h4 style="font-size:12pt;color:#1a4d8f;margin:10pt 0 3pt">${i+1}. ${esc(s.title||"")}</h4>`;
+        if(s.summary)body+=`<p>${esc(s.summary)}</p>`;
+        if(Array.isArray(s.points)&&s.points.length)body+=`<ul>${s.points.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`;
+      });
+    } else if(Array.isArray(ov.bullets)&&ov.bullets.length){
+      body+=`<h3>${esc(d.keypoints)}</h3><ul>${ov.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;
+    }
+    if(Array.isArray(ov.questions)&&ov.questions.length){
+      body+=`<h3>${esc(d.topq)}</h3><ol>${ov.questions.slice(0,3).map(q=>`<li>${esc(q)}</li>`).join("")}</ol>`;
+    }
+    body+=`<hr/>`;
+  }
+  chapters.forEach((c,i)=>{
+    body+=`<h2>${i+1}. ${esc(c.title)} <span style="font-weight:normal;color:#888;font-size:10pt">(${c.lang.toUpperCase()} &middot; ${c.words} ${esc(d.words)})</span></h2>`;
+    body+=`<p>${esc(c.recap)}</p>`;
+    body+=`<p><b>${esc(d.questions)}:</b></p><ul>${c.questions.map(q=>`<li>${esc(q)}</li>`).join("")}</ul>`;
+  });
+
+  // Full transcription of everything captured, from the beginning — colored by speaker.
+  const blocks=chapters.map(c=>c.segments&&c.segments.length?c.segments:[{speaker:0,text:c.text}]);
+  if(segments.length)blocks.push(segments);
+  const usedSpeakers=new Set();
+  blocks.forEach(segs=>segs.forEach(s=>usedSpeakers.add(s.speaker)));
+  if(blocks.length){
+    body+=`<hr/><h2>${esc(d.fulltranscript)}</h2>`;
+    if(usedSpeakers.size>1){
+      body+=`<p style="font-size:10pt">`+[...usedSpeakers].sort((a,b)=>a-b)
+        .map(sp=>`<span style="color:${pc(sp).word};font-weight:bold">&#9679; ${d.speaker} ${sp+1}</span>`).join("&nbsp;&nbsp;")+`</p>`;
+    }
+    blocks.forEach(segs=>{
+      body+=`<p>`+segs.map(s=>`<span style="color:${pc(s.speaker).word}">${esc(s.text)}</span>`).join(" ")+`</p>`;
+    });
+  }
+
+  const docHtml=`<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Companion</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>
+    @page{margin:2.2cm}
+    body{font-family:Calibri,Arial,sans-serif;font-size:11.5pt;line-height:1.5;color:#222}
+    h1{font-size:22pt;color:#1a4d8f;margin:0 0 4pt}
+    h2{font-size:14pt;color:#0c2b5c;border-bottom:1px solid #ddd;padding-bottom:3pt;margin-top:18pt}
+    h3{font-size:11.5pt;color:#1c7fc0;margin:10pt 0 4pt;text-transform:uppercase;letter-spacing:.5pt}
+    h4{font-size:12pt;color:#1a4d8f;margin:10pt 0 3pt}
+    ul,ol{margin:4pt 0 8pt 18pt}
+    li{margin-bottom:4pt}
+    hr{border:0;border-top:2px solid #2f74bd;margin:16pt 0}
+  </style></head><body>${body}</body></html>`;
+
+  const blob=new Blob(['\ufeff',docHtml],{type:"application/msword"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`conversation-${new Date().toISOString().slice(0,10)}.doc`;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+  tt(d.exported);
 });
 
 $("#lang").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   [...e.currentTarget.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");
   langMode=b.dataset.l;
-  uiLang=langMode==="it"?"it":langMode==="en"?"en":(uiLang);
+  uiLang=langMode==="it"?"it":"en";
   applyUI();refreshChapters();
   if(recording&&recog){recog.lang=pickLang();try{recog.stop();}catch(_){}}
-  tt(langMode==="auto"?(uiLang==="it"?"Lingua: automatica":"Language: automatic"):"→ "+langMode.toUpperCase());
+  tt("→ "+langMode.toUpperCase());
 });
 
 applyUI();updateRecapBtn();
