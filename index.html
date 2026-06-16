@@ -257,7 +257,7 @@
     <div id="chapters"></div>
     <div class="empty" id="empty">
       <div class="big">🎙️</div>
-      <div id="t-empty">Record a meeting, interview, or call.<br>It transcribes live, splits into chapters by topic,<br>and suggests smart questions as you go.</div>
+      <div id="t-empty">Record and transcribe live, split into chapters, recap<br>and suggest smart questions as you go!</div>
     </div>
   </div>
 
@@ -374,19 +374,19 @@ function buildPrompt(text, lang, mode){
       system:`You analyze a short segment of a live conversation transcript (one topic/chapter). ${langRule} `+
         `The text is auto-generated speech-to-text and may have errors — infer intent. `+
         `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
-        `{"title": 3-6 word specific title, "recap": 2-3 substantive sentences capturing substance, decisions and open issues, `+
+        `{"title": 3-6 word specific title, "recap": 1 concise sentence capturing the key point or decision, `+
         `"questions": [3 sharp non-generic follow-up questions referencing concrete details from this segment; no yes/no, no filler]}`,
       user:`Transcript segment:\n"""${text}"""`
     };
   }
   return {
-    system:`You produce an EXTENSIVE structured recap of the ENTIRE conversation, from the very beginning to now, organized into coherent thematic sections in chronological order. ${langRule} `+
+    system:`You produce a CONCISE structured recap of the ENTIRE conversation, from the beginning to now, organized into coherent thematic sections in chronological order. ${langRule} `+
       `The text is auto-generated speech-to-text and may have errors — infer intent. `+
-      `Be concrete: capture decisions, arguments, data points, disagreements, action items, open questions. Avoid generic phrasing and topic labels. `+
+      `Be concrete but brief: capture only key decisions, facts, action items and open questions. Avoid generic phrasing and topic labels. `+
       `Split the conversation into 2-6 coherent sections, each covering a distinct topic or phase. `+
       `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
-      `{"recap": rich 3-5 sentence narrative of the whole conversation and how it evolved, `+
-      `"sections": [{"title": 3-6 word specific section heading, "summary": 2-4 substantive sentences capturing the decisions, facts and open issues of this part, "points": [2-5 concrete, information-dense bullet points]}], `+
+      `{"recap": short 1-2 sentence overview of the whole conversation, `+
+      `"sections": [{"title": 3-6 word specific section heading, "summary": 1 concise sentence capturing the essence of this part, "points": [2-4 short, information-dense bullet points]}], `+
       `"questions": [exactly 3 important forward-looking questions to ask next, specific to the actual content]}`,
     user:`Full conversation transcript:\n"""${text}"""`
   };
@@ -402,7 +402,7 @@ function parseJson(s){
 
 /* ---------- i18n ---------- */
 const I18N={
-  en:{tag:"Live conversation intelligence",empty:"Record a meeting, interview, or call.<br>It transcribes live, splits into chapters by topic,<br>and suggests smart questions as you go.",
+  en:{tag:"Live conversation intelligence",empty:"Record and transcribe live, split into chapters, recap<br>and suggest smart questions as you go!",
     reset:"Reset",export:"Word",copy:"Copy",listening:"Listening…",ready:"Tap record to begin",stopped:"Stopped",
     chapter:"Chapter",questions:"Smart questions",transcript:"Show transcript",recapbtn:"Recap so far",
     ovTitle:"Recap so far",topq:"Top 3 questions",keypoints:"Key points",
@@ -416,7 +416,7 @@ const I18N={
     keyNote:"<b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
     save:"Save",clear:"Remove",close:"Close",connected:"● Connected — recaps use Claude",artifactOn:"● Connected via Claude app",notConnected:"○ Not connected — using on-device fallback",
     keySaved:"Claude connected",keyRemoved:"Key removed",keyBad:"That doesn't look like an Anthropic key (sk-…)"},
-  it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Registra una riunione, intervista o chiamata.<br>Trascrive dal vivo, divide in capitoli per argomento<br>e propone domande intelligenti.",
+  it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Registra e trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
     reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
     ovTitle:"Riepilogo finora",topq:"3 domande chiave",keypoints:"Punti chiave",
@@ -519,7 +519,7 @@ function makeRecap(text,lang,maxLen){
     return {s,sc:sc+Math.min(s.length/90,1.4)};
   }).sort((a,b)=>b.sc-a.sc);
   const lim=maxLen||240,take=[];let len=0;
-  for(const o of scored){if(len+o.s.length>lim&&take.length)break;take.push(o);len+=o.s.length;if(take.length>=3)break;}
+  for(const o of scored){if(len+o.s.length>lim&&take.length)break;take.push(o);len+=o.s.length;if(take.length>=2)break;}
   // preserve original order
   take.sort((a,b)=>sents.indexOf(a.s)-sents.indexOf(b.s));
   let out=take.map(x=>x.s).join(" ");
@@ -550,7 +550,7 @@ async function analyzeChapter(text){
   const lang=langMode==="it"?"it":"en";
   if(LLM.enabled){try{const r=await LLM.call(text,lang,"chapter");
     if(r&&r.title&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,text,_src:"llm"};}catch(e){}}
-  return{title:makeTitle(text,lang),recap:makeRecap(text,lang,210),questions:makeQuestions(text,lang,3),lang,text};
+  return{title:makeTitle(text,lang),recap:makeRecap(text,lang,120),questions:makeQuestions(text,lang,3),lang,text};
 }
 function makeBullets(text,lang){
   // Build an extensive, ordered set of bullet points spanning the whole transcript.
@@ -588,12 +588,12 @@ function makeSections(lang){
   // Include the uncommitted tail (current buffer) as a final section if it has substance.
   const tail=curBuf.trim();
   if(tail.split(/\s+/).filter(Boolean).length>=MIN_WORDS){
-    secs.push({title:makeTitle(tail,lang),summary:makeRecap(tail,lang,220),points:makeBullets(tail,lang).slice(0,4)});
+    secs.push({title:makeTitle(tail,lang),summary:makeRecap(tail,lang,120),points:makeBullets(tail,lang).slice(0,4)});
   }
   // If nothing was chaptered yet, derive a single section from everything captured.
   if(!secs.length){
     const t=allText();
-    if(t)secs.push({title:makeTitle(t,lang),summary:makeRecap(t,lang,260),points:makeBullets(t,lang).slice(0,6)});
+    if(t)secs.push({title:makeTitle(t,lang),summary:makeRecap(t,lang,150),points:makeBullets(t,lang).slice(0,5)});
   }
   return secs;
 }
@@ -601,7 +601,7 @@ async function analyzeOverview(text){
   const lang=langMode==="it"?"it":"en";
   if(LLM.enabled){try{const r=await LLM.call(text,lang,"overview");
     if(r&&r.recap&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,_src:"llm"};}catch(e){}}
-  return{recap:makeRecap(text,lang,300),sections:makeSections(lang),questions:makeQuestions(text,lang,3),lang};
+  return{recap:makeRecap(text,lang,140),sections:makeSections(lang),questions:makeQuestions(text,lang,3),lang};
 }
 
 /* ---------- Concept-based chapter splitting ----------
