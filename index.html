@@ -164,8 +164,10 @@
   .recapBtn .em{font-size:15px}
 
   /* Bottom bar */
-  .bar{position:absolute;left:0;right:0;bottom:0;padding:14px 18px calc(20px + env(safe-area-inset-bottom));
+  .bar{position:absolute;left:0;right:0;bottom:0;padding:14px 18px calc(28px + env(safe-area-inset-bottom));
     background:linear-gradient(0deg,var(--bg-b) 38%,rgba(47,116,189,0));display:flex;align-items:center;justify-content:center;gap:14px;z-index:15}
+  .credits{position:absolute;left:0;right:0;bottom:calc(6px + env(safe-area-inset-bottom));text-align:center;
+    font-size:9.5px;letter-spacing:.6px;font-weight:700;color:var(--txt);opacity:.5;pointer-events:none;z-index:16}
 
   .rec{position:relative;width:80px;height:80px;border-radius:50%;border:0;cursor:pointer;
     background:linear-gradient(135deg,var(--hot),#ff7a5c);color:#fff;display:grid;place-items:center;
@@ -194,6 +196,35 @@
 
   .pill{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(61,220,151,.16);color:var(--ok);letter-spacing:.5px}
   .pill.new{background:rgba(255,209,102,.18);color:var(--gold)}
+
+  /* API key button + modal */
+  .keybtn{background:var(--card);border:1px solid var(--line);color:var(--mut);width:34px;height:34px;border-radius:11px;
+    display:grid;place-items:center;cursor:pointer;font-size:15px;transition:.2s;flex:none}
+  .keybtn:active{transform:scale(.92)}
+  .keybtn.on{color:var(--ok);border-color:rgba(61,220,151,.5);box-shadow:0 0 0 1px rgba(61,220,151,.3) inset}
+  .modal{position:fixed;inset:0;background:rgba(2,8,22,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;z-index:80;padding:22px}
+  .modal.show{display:flex}
+  .sheet{width:100%;max-width:420px;background:linear-gradient(135deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:20px;padding:18px 18px 16px;box-shadow:0 24px 60px rgba(0,0,0,.5);animation:rise .35s cubic-bezier(.2,.8,.2,1) both}
+  .sheet h3{font-size:16px;font-weight:800;letter-spacing:-.2px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .sheet .sub{font-size:12px;color:var(--mut);line-height:1.5;margin-bottom:13px}
+  .keyrow{display:flex;gap:8px;margin-bottom:10px}
+  .keyrow input{flex:1;min-width:0;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:11px 12px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .keyrow input:focus{outline:none;border-color:var(--accent)}
+  .keyrow .eye{background:var(--card3);border:1px solid var(--line);color:var(--txt);border-radius:12px;width:44px;cursor:pointer;font-size:15px;flex:none}
+  .mbtns{display:flex;gap:8px;margin-top:4px}
+  .mbtn{flex:1;border:0;border-radius:12px;padding:12px;font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;transition:.2s}
+  .mbtn:active{transform:scale(.97)}
+  .mbtn.save{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .mbtn.ghostb{background:var(--card3);color:var(--txt);border:1px solid var(--line)}
+  .mbtn.danger{background:rgba(255,77,109,.16);color:var(--hot);border:1px solid rgba(255,77,109,.4)}
+  .mnote{font-size:10.5px;color:var(--mut);line-height:1.5;margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+  .mnote b{color:var(--gold)}
+  .mstatus{font-size:11.5px;font-weight:700;margin-bottom:11px}
+  .mstatus.ok{color:var(--ok)} .mstatus.off{color:var(--mut)}
+  .mlink{color:var(--accent2);text-decoration:none}
 </style>
 </head>
 <body>
@@ -203,9 +234,12 @@
       <div class="logo">◎</div>
       <div><h1 id="t-title">Companion</h1><p id="t-tag">Live conversation intelligence</p></div>
     </div>
-    <div class="lang" id="lang">
-      <button data-l="en" class="on">EN</button>
-      <button data-l="it">IT</button>
+    <div style="display:flex;align-items:center;gap:9px">
+      <div class="keybtn" id="keyBtn" title="Connect Claude (API key)">🔑</div>
+      <div class="lang" id="lang">
+        <button data-l="en" class="on">EN</button>
+        <button data-l="it">IT</button>
+      </div>
     </div>
   </div>
 
@@ -248,27 +282,83 @@
       <small id="t-export">Word</small>
     </div>
   </div>
+
+  <div class="credits">Credits: F. Peddis</div>
+</div>
+
+<div class="modal" id="keyModal">
+  <div class="sheet">
+    <h3>🔑 <span id="t-keyTitle">Connect Claude</span></h3>
+    <div class="sub" id="t-keySub">Paste your Anthropic API key to generate recaps and smart questions with Claude. It is stored only in this browser and sent only to Anthropic.</div>
+    <div class="mstatus off" id="keyStatus"></div>
+    <div class="keyrow">
+      <input id="keyInput" type="password" placeholder="sk-ant-..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="eye" id="keyEye" title="Show / hide">👁</button>
+    </div>
+    <div class="mbtns">
+      <button class="mbtn save" id="keySave" data-t="save">Save</button>
+      <button class="mbtn danger" id="keyClear" data-t="clear">Remove</button>
+      <button class="mbtn ghostb" id="keyClose" data-t="close">Close</button>
+    </div>
+    <div class="mnote" id="t-keyNote"><b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class="mlink" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
-   LLM — Claude called DIRECTLY inside the app via the artifact
-   runtime feature `window.claude.complete`. When the app runs
-   inside the Claude environment, recaps and smart questions are
-   generated by Claude itself. When that feature isn't present
-   (e.g. a copy opened as a plain local/static file), the
-   on-device heuristic engine takes over as a silent fallback so
-   the app still works end-to-end without ever exiting.
+   LLM — recaps & smart questions powered by Claude.
+
+   Two ways to connect, tried in this order:
+   1) Your own Anthropic API key, pasted INTO THE APP (never typed in
+      chat). It's kept only in this browser's localStorage and sent
+      only to api.anthropic.com — never to any other server.
+   2) The Claude artifact runtime (window.claude.complete), available
+      when this file runs inside the Claude environment.
+   If neither is available, the on-device heuristic engine takes over
+   so the app still works end-to-end.
+
+   SECURITY NOTE: a key stored in the browser is readable by anyone with
+   access to this device/browser. Use a key scoped/limited to this use,
+   and clear it when done. For multi-user or production use, proxy the
+   call through your own backend instead of shipping the key to the browser.
    ============================================================ */
+const KEY_STORE="cc_anthropic_key";
+function getApiKey(){ try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } }
+function setApiKey(k){ try{ k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE); }catch(e){} }
+
 const LLM = {
-  // True only when the Claude artifact completion feature is available.
-  get enabled(){ return typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
+  model: "claude-sonnet-4-6",
+  get hasKey(){ return /^sk-/.test(getApiKey()); },
+  get hasArtifact(){ return typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
+  get enabled(){ return this.hasKey || this.hasArtifact; },
 
   async call(text, lang, mode){
     const {system,user}=buildPrompt(text,lang,mode);
-    // window.claude.complete takes a single prompt string and returns text.
+    // 1) Direct Anthropic API with the user's own key
+    if(this.hasKey){
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{
+          "content-type":"application/json",
+          "x-api-key":getApiKey(),
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true"
+        },
+        body:JSON.stringify({
+          model:this.model,
+          max_tokens: mode==="overview"?1600:700,
+          system,
+          messages:[{role:"user",content:user+"\n\nReturn ONLY the JSON object described above. No prose, no markdown, no backticks."}]
+        })
+      });
+      if(!resp.ok){ throw new Error("API "+resp.status+" "+(await resp.text().catch(()=>""))); }
+      const data=await resp.json();
+      const raw=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+      return parseJson(raw);
+    }
+    // 2) Claude artifact runtime
     const prompt = system + "\n\n" + user + "\n\nReturn ONLY the JSON object described above. No prose, no markdown, no backticks.";
     const raw = await window.claude.complete(prompt);
     return parseJson(raw);
@@ -321,7 +411,11 @@ const I18N={
     mic:"Mic blocked. Allow microphone access in Settings → Safari.",cleared:"Cleared",exported:"Exported",
     autoStart:"Auto-detecting language…",words:"words",qCopied:"Question copied",noContent:"Keep talking — not enough yet for a recap.",
     updated:"Recap updated",thinking:"Analyzing the full conversation…",
-    transcriptCopied:"Transcript copied to clipboard",nothingYet:"Nothing to copy yet"},
+    transcriptCopied:"Transcript copied to clipboard",nothingYet:"Nothing to copy yet",
+    keyTitle:"Connect Claude",keySub:"Paste your Anthropic API key to generate recaps and smart questions with Claude. It is stored only in this browser and sent only to Anthropic.",
+    keyNote:"<b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
+    save:"Save",clear:"Remove",close:"Close",connected:"● Connected — recaps use Claude",artifactOn:"● Connected via Claude app",notConnected:"○ Not connected — using on-device fallback",
+    keySaved:"Claude connected",keyRemoved:"Key removed",keyBad:"That doesn't look like an Anthropic key (sk-…)"},
   it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Registra una riunione, intervista o chiamata.<br>Trascrive dal vivo, divide in capitoli per argomento<br>e propone domande intelligenti.",
     reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
@@ -331,7 +425,11 @@ const I18N={
     mic:"Microfono bloccato. Consenti l'accesso in Impostazioni → Safari.",cleared:"Cancellato",exported:"Esportato",
     autoStart:"Rilevamento lingua…",words:"parole",qCopied:"Domanda copiata",noContent:"Continua a parlare — non c'è ancora abbastanza per un riepilogo.",
     updated:"Riepilogo aggiornato",thinking:"Analisi dell'intera conversazione…",
-    transcriptCopied:"Trascrizione copiata",nothingYet:"Niente da copiare ancora"}
+    transcriptCopied:"Trascrizione copiata",nothingYet:"Niente da copiare ancora",
+    keyTitle:"Connetti Claude",keySub:"Incolla la tua chiave API Anthropic per generare riepiloghi e domande intelligenti con Claude. È salvata solo in questo browser e inviata solo ad Anthropic.",
+    keyNote:"<b>Tienila privata:</b> una chiave salvata nel browser può essere letta da chi usa questo dispositivo. Usa una chiave limitata a questo scopo e rimuovila al termine. Ottieni una chiave su <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
+    save:"Salva",clear:"Rimuovi",close:"Chiudi",connected:"● Connesso — i riepiloghi usano Claude",artifactOn:"● Connesso tramite l'app Claude",notConnected:"○ Non connesso — uso il motore locale",
+    keySaved:"Claude connesso",keyRemoved:"Chiave rimossa",keyBad:"Non sembra una chiave Anthropic (sk-…)"}
 };
 let uiLang="en";
 function applyUI(){
@@ -342,6 +440,11 @@ function applyUI(){
   document.getElementById("t-copy").textContent=d.copy;
   document.getElementById("t-export").textContent=d.export;
   document.getElementById("t-recapbtn").textContent=d.recapbtn;
+  document.getElementById("t-keyTitle").textContent=d.keyTitle;
+  document.getElementById("t-keySub").textContent=d.keySub;
+  document.getElementById("t-keyNote").innerHTML=d.keyNote;
+  document.querySelectorAll("[data-t]").forEach(b=>{b.textContent=d[b.dataset.t]||b.textContent;});
+  updateKeyUI();
 }
 
 /* ---------- State ---------- */
@@ -349,12 +452,14 @@ let recog=null, recording=false, langMode="en";
 let interim="", chapters=[], curBuf="", fullText="", lastTs=0;
 let audioCtx=null, analyser=null, rafId=null, micStream=null, micReady=false;
 let isFirstChapter=true, lastOverview=null;
-/* Speaker diarization (heuristic, voice-pitch based) */
+/* Speaker recognition (heuristic, voice-pitch based) — stable identity per person */
 let segments=[];            // current buffer split into {speaker,text} pieces
-let speakers=[];            // [{pitch, count}] running pitch centroid per detected speaker
-let pitchSamples=[];        // recent voiced f0 samples {t,f} for the utterance in progress
-let lastUtteranceEnd=0, lastSpeaker=0;
-const SPEAKER_TOL=28;       // Hz: closer than this to a known speaker → same person
+let speakers=[];            // [{pitch, count}] running pitch centroid per recognized speaker
+let pitchSamples=[];        // recent voiced f0 samples {t,f}
+let currentSpeaker=0, lastUtteranceEnd=0, lastActivityTs=0;
+const STICK_TOL=34;         // Hz: stay on the current speaker within this (absorbs intonation)
+const MERGE_TOL=30;         // Hz: match an existing other speaker within this, else it's a new person
+const SENTENCE_PAUSE_MS=1100; // no speech for this long → end the sentence with a full stop
 /* Bright colors for the dark in-app cards; darker variants for the white Word export. */
 const PALETTE=[
   {css:"sp-0",app:"#7ee0ff",word:"#0b6e8c"},
@@ -365,7 +470,6 @@ const PALETTE=[
   {css:"sp-5",app:"#ffb270",word:"#9a521a"}
 ];
 const pc=i=>PALETTE[((i%PALETTE.length)+PALETTE.length)%PALETTE.length];
-let liveSpeaker=0;          // best-guess speaker for the text being spoken right now
 /* Per-section background tints — link a recapped transcript chunk to its recap card. */
 const SECTION_TINTS=[
   {bg:"rgba(79,140,255,.15)", bd:"rgba(79,140,255,.55)", tx:"#a9caff", ac:"#4f8cff"},
@@ -501,13 +605,14 @@ async function analyzeOverview(text){
 }
 
 /* ---------- Concept-based chapter splitting ----------
-   - First chunk waits for a solid base (>=60 words) so it's not tiny.
+   Chapters are intentionally long so the conversation isn't chopped up.
+   - First chunk waits for a solid base (>=110 words).
    - After that, a new chapter forms when EITHER:
-       a) a topic shift is detected (low keyword overlap with current chapter), OR
-       b) the chunk gets long (>=90 words), OR
-       c) a long pause (>=4s) lands on a reasonable-sized chunk.
+       a) a clear topic shift is detected on an already-substantial chunk, OR
+       b) the chunk gets long (>=320 words), OR
+       c) a long pause (>=9s) lands on a substantial chunk.
 */
-const FIRST_MIN=60, MIN_WORDS=22, MAX_WORDS=90, PAUSE_MS=4000;
+const FIRST_MIN=110, MIN_WORDS=110, MAX_WORDS=320, PAUSE_MS=9000;
 let recentSentences=[]; // for topic-shift comparison
 
 function topicShift(){
@@ -521,7 +626,7 @@ function topicShift(){
   if(b.size<3)return false;
   let overlap=0;b.forEach(w=>{if(a.has(w))overlap++;});
   const ratio=overlap/b.size;
-  return ratio<0.18; // few shared concepts → likely a new topic
+  return ratio<0.10; // very few shared concepts → a genuinely new topic (keeps chapters long)
 }
 
 function curWords(){return curBuf.trim().split(/\s+/).filter(Boolean).length;}
@@ -530,6 +635,7 @@ async function commitChapter(){
   const text=curBuf.trim();
   const w=text.split(/\s+/).filter(Boolean).length;
   if(w<MIN_WORDS){return;} // too small, keep accumulating
+  endSentence();                 // close the final sentence of this section
   const segs=segments.slice();   // capture speaker-tagged transcript for this chapter
   curBuf="";segments=[];
   // Push the section immediately (pending) so the transcript window keeps showing
@@ -661,65 +767,80 @@ async function ensureMic(){
    forensic — it nudges coloring, it doesn't guarantee identity. */
 function detectPitch(){
   if(!analyser||!analyser.getFloatTimeDomainData)return null;
-  const N=Math.min(1024,analyser.fftSize),buf=new Float32Array(analyser.fftSize);
+  const N=Math.min(1536,analyser.fftSize),buf=new Float32Array(analyser.fftSize);
   analyser.getFloatTimeDomainData(buf);
-  let rms=0;for(let i=0;i<N;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/N);
-  if(rms<0.012)return null;                       // too quiet → unvoiced/silence
+  let r0=0;for(let i=0;i<N;i++)r0+=buf[i]*buf[i];
+  const rms=Math.sqrt(r0/N);
+  if(rms<0.013)return null;                        // too quiet → unvoiced/silence
   const sr=(audioCtx&&audioCtx.sampleRate)||44100;
-  const minLag=Math.floor(sr/350),maxLag=Math.floor(sr/70);  // human voice 70–350 Hz
-  let bestLag=-1,best=0;
+  const minLag=Math.max(2,Math.floor(sr/350)),maxLag=Math.min(N-1,Math.floor(sr/70)); // 70–350 Hz
+  // normalized autocorrelation (divided by the number of summed terms so it
+  // isn't biased toward short lags)
+  const norms=new Float32Array(maxLag+1);
+  let bestNorm=0;
   for(let lag=minLag;lag<=maxLag;lag++){
     let c=0;for(let i=0;i<N-lag;i++)c+=buf[i]*buf[i+lag];
-    if(c>best){best=c;bestLag=lag;}
+    const norm=c/(N-lag);norms[lag]=norm;
+    if(norm>bestNorm)bestNorm=norm;
+  }
+  if(bestNorm<=0||bestNorm<0.28*(r0/N))return null;  // clarity gate: reject aperiodic/noisy frames
+  // pick the FIRST strong local-max peak → the true fundamental, avoiding the
+  // octave-down errors you get when a multiple of the period correlates as well
+  let bestLag=-1;
+  for(let lag=minLag+1;lag<maxLag;lag++){
+    if(norms[lag]>=0.85*bestNorm&&norms[lag]>=norms[lag-1]&&norms[lag]>=norms[lag+1]){bestLag=lag;break;}
   }
   if(bestLag<=0)return null;
   return sr/bestLag;
 }
-function classifySpeaker(){
-  // median pitch over the samples collected during the utterance just spoken
-  const window=pitchSamples.filter(s=>s.t>=lastUtteranceEnd);
+function median(a){const s=a.slice().sort((x,y)=>x-y);return s.length?s[Math.floor(s.length/2)]:null;}
+function recentMed(ms){return median(pitchSamples.filter(s=>s.t>=Date.now()-ms).map(s=>s.f));}
+/* Identify WHO spoke the utterance that just ended, from the median pitch over
+   its voiced samples. Goal: stable identity → one color per person. Natural
+   intonation within a speaker (questions, emphasis) is absorbed by the sticky
+   tolerance, so the color does NOT flip on tone alone — only a clearly
+   different voice becomes a different speaker. */
+function classifyUtterance(){
+  const win=pitchSamples.filter(s=>s.t>=lastUtteranceEnd);
   lastUtteranceEnd=Date.now();
-  pitchSamples=pitchSamples.filter(s=>s.t>lastUtteranceEnd); // discard samples already attributed
-  if(window.length<2)return lastSpeaker;          // not enough voiced info → keep last speaker
-  const fs=window.map(s=>s.f).sort((a,b)=>a-b);
-  const med=fs[Math.floor(fs.length/2)];
-  let best=-1,bestD=1e9;
-  speakers.forEach((sp,i)=>{const dd=Math.abs(sp.pitch-med);if(dd<bestD){bestD=dd;best=i;}});
-  if(best>=0&&bestD<=SPEAKER_TOL){
-    const sp=speakers[best];sp.pitch=sp.pitch*0.8+med*0.2;sp.count++; // smooth the centroid
-    lastSpeaker=best;return best;
+  if(win.length<3)return currentSpeaker;            // too little voice → assume same speaker
+  const med=median(win.map(s=>s.f));
+  if(speakers.length===0){speakers.push({pitch:med,count:1});currentSpeaker=0;return 0;}
+  // 1) stay with the current speaker unless the pitch is clearly different
+  if(Math.abs(speakers[currentSpeaker].pitch-med)<=STICK_TOL){
+    const sp=speakers[currentSpeaker];sp.pitch=sp.pitch*0.85+med*0.15;sp.count++;return currentSpeaker;
   }
-  speakers.push({pitch:med,count:1});
-  lastSpeaker=speakers.length-1;return lastSpeaker;
-}
-/* Read-only guess of who is talking RIGHT NOW (last ~1.2s of pitch), so the
-   live text is colored by speaker immediately, before the utterance finalizes. */
-function liveSpeakerGuess(){
-  const recent=pitchSamples.filter(s=>s.t>=Date.now()-1200);
-  if(recent.length<2)return lastSpeaker;
-  const fs=recent.map(s=>s.f).sort((a,b)=>a-b);
-  const med=fs[Math.floor(fs.length/2)];
-  let best=-1,bestD=1e9;
-  speakers.forEach((sp,i)=>{const dd=Math.abs(sp.pitch-med);if(dd<bestD){bestD=dd;best=i;}});
-  if(best>=0&&bestD<=SPEAKER_TOL)return best;
-  return speakers.length;        // tone doesn't match anyone → tentatively the next (new) speaker
+  // 2) otherwise match the nearest known speaker within a merge tolerance
+  let best=-1,bd=1e9;speakers.forEach((s,i)=>{const d=Math.abs(s.pitch-med);if(d<bd){bd=d;best=i;}});
+  if(best>=0&&bd<=MERGE_TOL){const sp=speakers[best];sp.pitch=sp.pitch*0.85+med*0.15;sp.count++;currentSpeaker=best;return best;}
+  // 3) genuinely new voice → new speaker (new color)
+  speakers.push({pitch:med,count:1});currentSpeaker=speakers.length-1;return currentSpeaker;
 }
 function rebuildCurBuf(){curBuf=segments.map(s=>s.text).join(" ")+(segments.length?" ":"");}
+/* Close the current sentence with a full stop — called only on a real pause or
+   at a speaker turn, so punctuation stays sparse and meaningful. */
+function endSentence(){
+  const last=segments[segments.length-1];
+  if(last&&!/[.!?…]$/.test(last.text)){last.text+=".";rebuildCurBuf();return true;}
+  return false;
+}
 
 /* ---------- Speech recognition ---------- */
 function pickLang(){return langMode==="it"?"it-IT":"en-US";}
-/* Append a finalized utterance as a speaker-tagged segment. Each final result
-   is a pause in speech, so we close it with a separating dot — capitalizing the
-   sentence and never doubling punctuation the engine may already have added. */
+/* Append a finalized phrase. We do NOT punctuate every phrase — consecutive
+   phrases from the same speaker are joined with a space and only become
+   separate sentences when a pause (endSentence) or a speaker turn occurs. */
 function appendFinal(t,speaker){
   t=t.replace(/\s+/g," ").trim();
   if(!t)return;
-  t=t.charAt(0).toUpperCase()+t.slice(1);
-  if(!/[.!?…]$/.test(t))t+=".";                   // pause/topic change → dot, so sentences split cleanly
-  // merge into the previous segment if the same speaker is still talking
-  const prev=segments[segments.length-1];
-  if(prev&&prev.speaker===speaker)prev.text+=" "+t;
-  else segments.push({speaker,text:t});
+  const last=segments[segments.length-1];
+  if(last&&last.speaker===speaker){
+    if(/[.!?…]$/.test(last.text))t=t.charAt(0).toUpperCase()+t.slice(1); // new sentence after a pause
+    last.text+=" "+t;
+  }else{
+    if(last)endSentence();                          // a different speaker → end the previous turn
+    segments.push({speaker,text:t.charAt(0).toUpperCase()+t.slice(1)});
+  }
   rebuildCurBuf();
 }
 function startRecog(){
@@ -728,14 +849,16 @@ function startRecog(){
   recog=new SR();recog.continuous=true;recog.interimResults=true;recog.lang=pickLang();
   recog.onresult=e=>{
     interim="";
+    lastActivityTs=Date.now();                 // any speech (interim or final) = active
     for(let i=e.resultIndex;i<e.results.length;i++){
       const r=e.results[i];
       if(r.isFinal){const t=r[0].transcript.trim();
-        if(t){appendFinal(t,classifySpeaker());lastTs=Date.now();
+        if(t){
+          appendFinal(t,classifyUtterance());   // one stable speaker per utterance
+          lastTs=Date.now();
           evaluateSplit(false);}
       } else interim+=r[0].transcript;
     }
-    liveSpeaker=interim?liveSpeakerGuess():lastSpeaker;   // color the live text by current tone
     renderLive();updateRecapBtn();
   };
   recog.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){tt(I18N[uiLang].mic);stop();}};
@@ -769,21 +892,30 @@ function renderLive(){
   liveCard.style.display="block";
   ensureLiveStructure();
   const tail=segHtml(segments);
-  const interimHtml=interim?`<span class="${pc(liveSpeaker).css}" style="opacity:.78">${esc(interim)}</span>`:"";
+  // interim shown in the current speaker's color (stable; no per-tone flicker)
+  const interimHtml=interim?`<span class="${pc(currentSpeaker).css}" style="opacity:.78">${esc(interim)}</span>`:"";
   const inner=(tail||interimHtml)?`${tail}${tail&&interimHtml?" ":""}${interimHtml}`:"";
   document.getElementById("segLive").innerHTML=`<div class="seg-live">${inner}<span class="cursor"></span></div>`;
   liveTxt.scrollTop=liveTxt.scrollHeight;   // keep the latest text in view
 }
 
 /* pause detection */
-setInterval(()=>{if(recording&&curBuf.trim()&&Date.now()-lastTs>PAUSE_MS){evaluateSplit(true);lastTs=Date.now();}},900);
+setInterval(()=>{
+  if(!recording)return;
+  // chapter break on a long pause
+  if(curBuf.trim()&&Date.now()-lastTs>PAUSE_MS){evaluateSplit(true);lastTs=Date.now();}
+  // sentence full stop once speech has paused (no interim/final for a moment)
+  if(segments.length&&!interim&&Date.now()-lastActivityTs>SENTENCE_PAUSE_MS){if(endSentence())renderLive();}
+},500);
 
 /* sample vocal pitch a few times per second while recording (for speaker coloring) */
 setInterval(()=>{
   if(!recording)return;
   const f=detectPitch();
-  if(f)pitchSamples.push({t:Date.now(),f});
-  if(pitchSamples.length>500)pitchSamples.splice(0,pitchSamples.length-500);
+  if(f){
+    pitchSamples.push({t:Date.now(),f});
+    if(pitchSamples.length>500)pitchSamples.splice(0,pitchSamples.length-500);
+  }
 },110);
 
 /* ---------- Waveform ---------- */
@@ -805,7 +937,7 @@ async function start(){
   if(!startRecog())return;
   recording=true;
   // start a fresh pitch window so stale samples don't bias the first utterance
-  pitchSamples=[];lastUtteranceEnd=Date.now();
+  pitchSamples=[];lastUtteranceEnd=Date.now();lastActivityTs=Date.now();
   recBtn.classList.add("live");
   wave.style.display="flex";ico.style.display="none";
   dot.classList.add("live");
@@ -821,6 +953,7 @@ function stop(){
   stat.textContent=I18N[uiLang].stopped;
   if(recog){try{recog.stop();}catch(_){}}
   stopWave();
+  endSentence();          // finish the last sentence when recording stops
   evaluateSplit(true);
   // NOTE: we intentionally do NOT stop micStream tracks, so iOS keeps
   // the permission warm and won't re-prompt on the next recording.
@@ -860,7 +993,8 @@ $("#copy").addEventListener("click",async()=>{
 $("#clear").addEventListener("click",()=>{
   if(recording)stop();
   chapters=[];curBuf="";interim="";isFirstChapter=true;lastOverview=null;
-  segments=[];speakers=[];pitchSamples=[];lastUtteranceEnd=0;lastSpeaker=0;liveSpeaker=0;
+  segments=[];speakers=[];pitchSamples=[];
+  currentSpeaker=0;lastUtteranceEnd=0;lastActivityTs=0;
   liveTxt.innerHTML='<span class="cursor"></span>';liveCard.style.display="none";
   overview.style.display="none";refreshChapters();updateRecapBtn();
   tt(I18N[uiLang].cleared);stat.textContent=I18N[uiLang].ready;
@@ -944,7 +1078,29 @@ $("#lang").addEventListener("click",e=>{
   tt("→ "+langMode.toUpperCase());
 });
 
-applyUI();updateRecapBtn();
+/* ---------- API key modal ---------- */
+function updateKeyUI(){
+  const d=I18N[uiLang],st=document.getElementById("keyStatus"),btn=document.getElementById("keyBtn");
+  const on=LLM.hasKey, art=!on&&LLM.hasArtifact;
+  if(st){st.textContent=on?d.connected:(art?d.artifactOn:d.notConnected);st.className="mstatus "+((on||art)?"ok":"off");}
+  if(btn)btn.classList.toggle("on",on);
+}
+const keyModal=$("#keyModal"),keyInput=$("#keyInput");
+function openKey(){keyInput.value=getApiKey();keyInput.type="password";updateKeyUI();keyModal.classList.add("show");}
+function closeKey(){keyModal.classList.remove("show");}
+$("#keyBtn").addEventListener("click",openKey);
+$("#keyClose").addEventListener("click",closeKey);
+keyModal.addEventListener("click",e=>{if(e.target===keyModal)closeKey();});
+$("#keyEye").addEventListener("click",()=>{keyInput.type=keyInput.type==="password"?"text":"password";});
+$("#keySave").addEventListener("click",()=>{
+  const k=keyInput.value.trim();
+  if(k&&!/^sk-/.test(k)){tt(I18N[uiLang].keyBad);return;}
+  setApiKey(k);updateKeyUI();tt(k?I18N[uiLang].keySaved:I18N[uiLang].keyRemoved);
+  if(k)closeKey();
+});
+$("#keyClear").addEventListener("click",()=>{setApiKey("");keyInput.value="";updateKeyUI();tt(I18N[uiLang].keyRemoved);});
+
+applyUI();updateRecapBtn();updateKeyUI();
 </script>
 </body>
 </html>
