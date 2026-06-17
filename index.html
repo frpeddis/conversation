@@ -53,13 +53,18 @@
   .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 14px 160px}
   .scroll::-webkit-scrollbar{display:none}
 
-  /* Recap (overview) panel */
-  .overview{background:linear-gradient(135deg,rgba(124,92,255,.16),rgba(0,212,255,.10));
-    border:1px solid rgba(124,92,255,.35);border-radius:20px;padding:16px;margin-bottom:14px;
+  /* Recap (overview) panel — uniform light-blue fill */
+  .overview{background:rgba(94,160,240,.16);
+    border:1px solid rgba(120,180,255,.42);border-radius:20px;padding:16px;margin-bottom:14px;
     position:relative;overflow:hidden;animation:rise .5s cubic-bezier(.2,.8,.2,1) both;display:none}
-  .overview::before{content:"";position:absolute;top:-40%;right:-20%;width:60%;height:160%;
-    background:radial-gradient(circle,rgba(0,212,255,.25),transparent 70%);pointer-events:none}
   .ov-hd{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  /* Recap actions (copy / forward / save) */
+  .ov-actions{display:flex;gap:7px;margin-bottom:13px;flex-wrap:wrap}
+  .ov-act{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.22);border:1px solid var(--line);
+    color:var(--txt);font-family:inherit;font-weight:700;font-size:11.5px;padding:7px 12px;border-radius:10px;cursor:pointer;transition:.18s}
+  .ov-act:hover{border-color:rgba(120,180,255,.6);color:var(--accent2)}
+  .ov-act:active{transform:scale(.95)}
+  .ov-act svg{width:14px;height:14px}
   .ov-hd .ic{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#ff9e64);
     display:grid;place-items:center;font-size:14px}
   .ov-hd .ti{font-size:14px;font-weight:800;letter-spacing:-.2px}
@@ -369,6 +374,17 @@
   </div>
 </div>
 
+<div class="modal" id="resetModal">
+  <div class="sheet">
+    <h3>⚠️ <span id="t-resetTitle">Reset everything?</span></h3>
+    <div class="sub" id="t-resetMsg">This deletes the transcribed content, chapters and recap, and starts from scratch. This can't be undone.</div>
+    <div class="mbtns">
+      <button class="mbtn ghostb" id="resetCancel" data-t="cancel">Cancel</button>
+      <button class="mbtn danger" id="resetOk" data-t="resetConfirm">Delete &amp; start over</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -511,7 +527,10 @@ const I18N={
     mFast:"Fast",mFastS:"Haiku · cheapest",mBal:"Balanced",mBalS:"Sonnet",mAdv:"Advanced",mAdvS:"Opus · priciest",
     setVerb:"Recap & questions detail",vShort:"Short",vMed:"Medium",vLong:"Long",
     setChap:"Typical chapter length",setChapHint:"(words)",saved:"Settings saved",
-    setSpeech:"Spoken language",setSpeechHint:"(transcription)",setOut:"Recap & questions language"},
+    setSpeech:"Spoken language",setSpeechHint:"(transcription)",setOut:"Recap & questions language",
+    resetTitle:"Reset everything?",resetMsg:"This deletes the transcribed content, chapters and recap, and starts from scratch. This can't be undone.",
+    resetConfirm:"Delete & start over",cancel:"Cancel",
+    actCopy:"Copy",actShare:"Forward",actTxt:".txt",recapCopied:"Recap copied",recapShared:"Shared",recapSaved:"Recap saved (.txt)"},
   it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
     reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
@@ -530,7 +549,10 @@ const I18N={
     mFast:"Veloce",mFastS:"Haiku · economico",mBal:"Bilanciato",mBalS:"Sonnet",mAdv:"Avanzato",mAdvS:"Opus · costoso",
     setVerb:"Dettaglio riepilogo e domande",vShort:"Breve",vMed:"Medio",vLong:"Lungo",
     setChap:"Lunghezza tipica capitolo",setChapHint:"(parole)",saved:"Impostazioni salvate",
-    setSpeech:"Lingua parlata",setSpeechHint:"(trascrizione)",setOut:"Lingua di riepilogo e domande"}
+    setSpeech:"Lingua parlata",setSpeechHint:"(trascrizione)",setOut:"Lingua di riepilogo e domande",
+    resetTitle:"Azzerare tutto?",resetMsg:"Questo elimina il testo trascritto, i capitoli e il riepilogo, e riparte da zero. L'azione non è reversibile.",
+    resetConfirm:"Elimina e ricomincia",cancel:"Annulla",
+    actCopy:"Copia",actShare:"Inoltra",actTxt:".txt",recapCopied:"Riepilogo copiato",recapShared:"Condiviso",recapSaved:"Riepilogo salvato (.txt)"}
 };
 let uiLang="en";
 function applyUI(){
@@ -545,6 +567,7 @@ function applyUI(){
   document.getElementById("t-keyNote").innerHTML=d.keyNote;
   // settings labels
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set("t-resetTitle",d.resetTitle);set("t-resetMsg",d.resetMsg);
   set("t-setTitle",d.setTitle);set("t-setModelHint",d.setModelHint);set("t-setModel",d.setModel);
   document.getElementById("t-setModel").innerHTML=d.setModel+` <span class="set-hint" id="t-setModelHint">${d.setModelHint}</span>`;
   document.getElementById("t-setChap").innerHTML=d.setChap+` <span class="set-hint" id="t-setChapHint">${d.setChapHint}</span>`;
@@ -838,18 +861,56 @@ async function buildOverview(){
         </div>`).join("")+`</div>`
     : (a.bullets&&a.bullets.length?`<div class="qh" style="margin:4px 0 9px">▸ ${d.keypoints}</div><ul class="ov-bul">${a.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`:"");
   overview.style.display="block";
+  const icCopy='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
+  const icShare='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>';
+  const icTxt='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M9 13h6M9 17h4"/></svg>';
   overview.innerHTML=`
     <div class="ov-hd"><div class="ic">✨</div><div class="ti">${d.ovTitle}</div><div class="tm">${a._src==="llm"?"AI":"·"} ${now} · ${totalWords()} ${d.words}</div></div>
+    <div class="ov-actions">
+      <button class="ov-act" data-act="copy">${icCopy}${d.actCopy}</button>
+      <button class="ov-act" data-act="share">${icShare}${d.actShare}</button>
+      <button class="ov-act" data-act="txt">${icTxt}${d.actTxt}</button>
+    </div>
     <div class="ov-recap">${esc(a.recap)}</div>
     ${sectionsHtml}
     <div class="qh" style="margin-bottom:9px">★ ${d.topq}</div>
     ${a.questions.slice(0,3).map((q,n)=>`<div class="ov-q"><span class="n">${n+1}</span><span>${esc(q)}</span></div>`).join("")}`;
   overview.querySelectorAll(".ov-q").forEach(q=>q.addEventListener("click",()=>{navigator.clipboard?.writeText(q.textContent.replace(/^\d+/,"").trim());tt(d.qCopied);}));
+  overview.querySelectorAll(".ov-act").forEach(b=>b.addEventListener("click",()=>recapAction(b.dataset.act)));
   overview.style.animation="none";void overview.offsetWidth;overview.style.animation="rise .5s cubic-bezier(.2,.8,.2,1) both";
   scroll.scrollTo({top:0,behavior:"smooth"});
   tt(d.updated);
 }
 recapBtn.addEventListener("click",buildOverview);
+
+/* Plain-text version of the current recap, for copy / forward / save. */
+function recapText(){
+  const ov=lastOverview,d=I18N[uiLang]; if(!ov||!ov.recap)return "";
+  let s=d.ovTitle+"\n\n"+(ov.recap||"")+"\n";
+  if(Array.isArray(ov.sections)&&ov.sections.length){
+    s+="\n"+d.bysection+"\n";
+    ov.sections.forEach((sec,i)=>{ s+="\n"+(i+1)+". "+(sec.title||"")+"\n"; if(sec.summary)s+=sec.summary+"\n"; if(Array.isArray(sec.points))sec.points.forEach(p=>s+="  • "+p+"\n"); });
+  } else if(Array.isArray(ov.bullets)&&ov.bullets.length){
+    s+="\n"+d.keypoints+"\n"; ov.bullets.forEach(b=>s+="  • "+b+"\n");
+  }
+  if(Array.isArray(ov.questions)&&ov.questions.length){ s+="\n"+d.topq+"\n"; ov.questions.slice(0,3).forEach((q,n)=>s+=(n+1)+". "+q+"\n"); }
+  return s.trim();
+}
+async function recapAction(act){
+  const d=I18N[uiLang], text=recapText();
+  if(!text){tt(d.noContent);return;}
+  if(act==="copy"){ const ok=await copyText(text); tt(ok?d.recapCopied:d.nothingYet); }
+  else if(act==="share"){
+    if(navigator.share){ try{ await navigator.share({title:"Smart reporter — "+d.ovTitle, text}); tt(d.recapShared); }catch(e){} }
+    else { const ok=await copyText(text); tt(ok?d.recapCopied:d.nothingYet); }
+  } else if(act==="txt"){
+    const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download=`recap-${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1500); tt(d.recapSaved);
+  }
+}
 
 /* ---------- Mic: acquire ONCE, keep alive (no repeat prompts) ---------- */
 async function ensureMic(){
@@ -1098,7 +1159,7 @@ $("#copy").addEventListener("click",async()=>{
   tt(ok?I18N[uiLang].transcriptCopied:I18N[uiLang].nothingYet);
 });
 
-$("#clear").addEventListener("click",()=>{
+function doReset(){
   if(recording)stop();
   chapters=[];curBuf="";interim="";isFirstChapter=true;lastOverview=null;
   segments=[];speakers=[];pitchSamples=[];
@@ -1106,71 +1167,81 @@ $("#clear").addEventListener("click",()=>{
   liveTxt.innerHTML='<span class="cursor"></span>';liveCard.style.display="none";
   overview.style.display="none";refreshChapters();updateRecapBtn();
   tt(I18N[uiLang].cleared);stat.textContent=I18N[uiLang].ready;
+}
+const resetModal=$("#resetModal");
+$("#clear").addEventListener("click",()=>{
+  // nothing to reset yet → just clear silently without nagging
+  if(!chapters.length&&!curBuf.trim()&&!recording){doReset();return;}
+  resetModal.classList.add("show");
 });
+$("#resetCancel").addEventListener("click",()=>resetModal.classList.remove("show"));
+resetModal.addEventListener("click",e=>{if(e.target===resetModal)resetModal.classList.remove("show");});
+$("#resetOk").addEventListener("click",()=>{resetModal.classList.remove("show");doReset();});
 
 $("#export").addEventListener("click",()=>{
   const d=I18N[uiLang];
   const ov=lastOverview;   // use the structured recap built by "Recap so far"
   const dt=new Date().toLocaleString(uiLang==="it"?"it-IT":"en-US");
 
-  let body=`<h1>Smart reporter &mdash; ${esc(d.ovTitle)}</h1>`;
-  body+=`<p style="color:#666;font-size:11pt">${esc(dt)} &middot; ${totalWords()} ${esc(d.words)}</p>`;
+  // ---- Rich Text Format builder ----
+  const E=s=>{ let o=""; for(const ch of String(s)){ const c=ch.codePointAt(0);
+    if(ch==="\\")o+="\\\\"; else if(ch==="{")o+="\\{"; else if(ch==="}")o+="\\}";
+    else if(c===10)o+="\\line "; else if(c<128)o+=ch;
+    else if(c<=0xFFFF)o+="\\u"+(c>32767?c-65536:c)+"?"; else o+="?"; } return o; };
+  const colorsHex=["#1a4d8f","#0c2b5c","#1c7fc0","#777777"].concat(PALETTE.map(p=>p.word));
+  const colorTbl=colorsHex.map(h=>{h=h.replace("#","");return `\\red${parseInt(h.slice(0,2),16)}\\green${parseInt(h.slice(2,4),16)}\\blue${parseInt(h.slice(4,6),16)};`;}).join("");
+  const SPK=sp=>5+(((sp%6)+6)%6);   // RTF color index for a speaker (palette starts at index 5)
+  const H=(t,fs,ci)=>`{\\pard\\sb160\\sa60\\b\\fs${fs}\\cf${ci} ${E(t)}\\par}\n`;
+  const P=t=>`{\\pard\\sa80 ${E(t)}\\par}\n`;
+  const BUL=t=>`{\\pard\\fi-240\\li380\\sa40 \\u8226?\\tab ${E(t)}\\par}\n`;
+
+  let r=`{\\rtf1\\ansi\\ansicpg1252\\deff0\\fs23{\\fonttbl{\\f0\\fswiss\\fcharset0 Calibri;}}{\\colortbl;${colorTbl}}\n`;
+  r+=`{\\pard\\sa40\\b\\fs44\\cf1 ${E("Smart reporter — "+d.ovTitle)}\\par}\n`;
+  r+=`{\\pard\\sa200\\fs18\\cf4 ${E(dt+" · "+totalWords()+" "+d.words)}\\par}\n`;
 
   if(ov && ov.recap){
-    body+=`<h2>${esc(d.ovTitle)}</h2><p>${esc(ov.recap)}</p>`;
+    r+=H(d.ovTitle,28,2);
+    r+=P(ov.recap);
     if(Array.isArray(ov.sections)&&ov.sections.length){
-      body+=`<h3>${esc(d.bysection)}</h3>`;
+      r+=H(d.bysection,23,3);
       ov.sections.forEach((s,i)=>{
-        body+=`<h4 style="font-size:12pt;color:#1a4d8f;margin:10pt 0 3pt">${i+1}. ${esc(s.title||"")}</h4>`;
-        if(s.summary)body+=`<p>${esc(s.summary)}</p>`;
-        if(Array.isArray(s.points)&&s.points.length)body+=`<ul>${s.points.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`;
+        r+=H((i+1)+". "+(s.title||""),24,1);
+        if(s.summary)r+=P(s.summary);
+        if(Array.isArray(s.points))s.points.forEach(p=>r+=BUL(p));
       });
     } else if(Array.isArray(ov.bullets)&&ov.bullets.length){
-      body+=`<h3>${esc(d.keypoints)}</h3><ul>${ov.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;
+      r+=H(d.keypoints,23,3); ov.bullets.forEach(b=>r+=BUL(b));
     }
     if(Array.isArray(ov.questions)&&ov.questions.length){
-      body+=`<h3>${esc(d.topq)}</h3><ol>${ov.questions.slice(0,3).map(q=>`<li>${esc(q)}</li>`).join("")}</ol>`;
+      r+=H(d.topq,23,3); ov.questions.slice(0,3).forEach((q,n)=>r+=P((n+1)+". "+q));
     }
-    body+=`<hr/>`;
+    r+=`{\\pard\\sa160\\cf3 \\u8212?\\u8212?\\u8212?\\u8212?\\par}\n`;
   }
   chapters.forEach((c,i)=>{
-    body+=`<h2>${i+1}. ${esc(c.title)} <span style="font-weight:normal;color:#888;font-size:10pt">(${c.lang.toUpperCase()} &middot; ${c.words} ${esc(d.words)})</span></h2>`;
-    body+=`<p>${esc(c.recap)}</p>`;
-    body+=`<p><b>${esc(d.questions)}:</b></p><ul>${c.questions.map(q=>`<li>${esc(q)}</li>`).join("")}</ul>`;
+    r+=H((i+1)+". "+c.title+"  ("+(c.lang||"").toUpperCase()+" · "+c.words+" "+d.words+")",28,2);
+    if(c.recap)r+=P(c.recap);
+    if(Array.isArray(c.questions)&&c.questions.length){ r+=`{\\pard\\sa40\\b ${E(d.questions)}:\\par}\n`; c.questions.forEach(q=>r+=BUL(q)); }
   });
 
-  // Full transcription of everything captured, from the beginning — colored by speaker.
+  // Full transcript, colored by speaker
   const blocks=chapters.map(c=>c.segments&&c.segments.length?c.segments:[{speaker:0,text:c.text}]);
   if(segments.length)blocks.push(segments);
-  const usedSpeakers=new Set();
-  blocks.forEach(segs=>segs.forEach(s=>usedSpeakers.add(s.speaker)));
+  const used=new Set(); blocks.forEach(segs=>segs.forEach(s=>used.add(s.speaker)));
   if(blocks.length){
-    body+=`<hr/><h2>${esc(d.fulltranscript)}</h2>`;
-    if(usedSpeakers.size>1){
-      body+=`<p style="font-size:10pt">`+[...usedSpeakers].sort((a,b)=>a-b)
-        .map(sp=>`<span style="color:${pc(sp).word};font-weight:bold">&#9679; ${d.speaker} ${sp+1}</span>`).join("&nbsp;&nbsp;")+`</p>`;
+    r+=H(d.fulltranscript,28,2);
+    if(used.size>1){
+      r+=`{\\pard\\sa120 `+[...used].sort((a,b)=>a-b).map(sp=>`{\\b\\cf${SPK(sp)}\\u9679?  ${E(d.speaker+" "+(sp+1))}}`).join("    ")+`\\par}\n`;
     }
     blocks.forEach(segs=>{
-      body+=`<p>`+segs.map(s=>`<span style="color:${pc(s.speaker).word}">${esc(s.text)}</span>`).join(" ")+`</p>`;
+      r+=`{\\pard\\sa120 `+segs.map(s=>`{\\cf${SPK(s.speaker)} ${E(s.text)}}`).join(" ")+`\\par}\n`;
     });
   }
+  r+="}";
 
-  const docHtml=`<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Smart reporter</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>
-    @page{margin:2.2cm}
-    body{font-family:Calibri,Arial,sans-serif;font-size:11.5pt;line-height:1.5;color:#222}
-    h1{font-size:22pt;color:#1a4d8f;margin:0 0 4pt}
-    h2{font-size:14pt;color:#0c2b5c;border-bottom:1px solid #ddd;padding-bottom:3pt;margin-top:18pt}
-    h3{font-size:11.5pt;color:#1c7fc0;margin:10pt 0 4pt;text-transform:uppercase;letter-spacing:.5pt}
-    h4{font-size:12pt;color:#1a4d8f;margin:10pt 0 3pt}
-    ul,ol{margin:4pt 0 8pt 18pt}
-    li{margin-bottom:4pt}
-    hr{border:0;border-top:2px solid #2f74bd;margin:16pt 0}
-  </style></head><body>${body}</body></html>`;
-
-  const blob=new Blob(['\ufeff',docHtml],{type:"application/msword"});
+  const blob=new Blob([r],{type:"application/rtf"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download=`conversation-${new Date().toISOString().slice(0,10)}.doc`;
+  a.download=`smart-reporter-${new Date().toISOString().slice(0,10)}.rtf`;
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href),1500);
   tt(d.exported);
