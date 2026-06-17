@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Conversation Companion</title>
+<title>Smart reporter</title>
 <style>
   :root{
     --bg:#04102b; --bg-b:#2f74bd; --bg2:#0c2b5c; --card:#13233f; --card2:#1a3155; --card3:#234070;
@@ -185,8 +185,11 @@
 
   .side{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px}
   .side small{font-size:9.5px;color:var(--mut);font-weight:700}
-  .ghost{background:var(--card);border:1px solid var(--line);color:var(--txt);width:48px;height:48px;
-    border-radius:50%;display:grid;place-items:center;cursor:pointer;font-size:18px;transition:.2s}
+  .ghost{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--line);color:var(--txt);width:50px;height:50px;
+    border-radius:16px;display:grid;place-items:center;cursor:pointer;transition:.2s;
+    box-shadow:0 4px 14px rgba(0,0,0,.28),0 0 0 1px rgba(255,255,255,.02) inset}
+  .ghost svg{opacity:.92}
+  .ghost:hover{border-color:rgba(124,160,255,.5);color:var(--accent2)}
   .ghost:active{transform:scale(.9)}
 
   .toast{position:absolute;left:50%;top:62px;transform:translateX(-50%) translateY(-20px);
@@ -225,6 +228,18 @@
   .mstatus{font-size:11.5px;font-weight:700;margin-bottom:11px}
   .mstatus.ok{color:var(--ok)} .mstatus.off{color:var(--mut)}
   .mlink{color:var(--accent2);text-decoration:none}
+
+  /* Settings — segmented controls */
+  .set-group{margin-bottom:15px}
+  .set-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.9px;color:var(--accent2);font-weight:800;margin-bottom:8px}
+  .set-hint{text-transform:none;letter-spacing:0;color:var(--mut);font-weight:600;font-size:10px}
+  .seg{display:flex;gap:5px;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:13px;padding:5px}
+  .seg button{flex:1;min-width:0;border:0;background:transparent;color:var(--mut);font-family:inherit;font-weight:800;font-size:13px;
+    padding:9px 4px;border-radius:9px;cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+  .seg button span{font-size:8.5px;font-weight:600;opacity:.75;white-space:nowrap}
+  .seg button:active{transform:scale(.95)}
+  .seg button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 14px rgba(79,140,255,.45)}
+  .seg button.on span{opacity:.92}
 </style>
 </head>
 <body>
@@ -232,9 +247,12 @@
   <div class="hd">
     <div class="brand">
       <div class="logo">◎</div>
-      <div><h1 id="t-title">Companion</h1><p id="t-tag">Live conversation intelligence</p></div>
+      <div><h1 id="t-title">Smart reporter</h1><p id="t-tag">Live conversation intelligence</p></div>
     </div>
     <div style="display:flex;align-items:center;gap:9px">
+      <div class="keybtn" id="setBtn" title="Settings">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
       <div class="keybtn" id="keyBtn" title="Connect Claude (API key)">🔑</div>
       <div class="lang" id="lang">
         <button data-l="en" class="on">EN</button>
@@ -257,7 +275,7 @@
     <div id="chapters"></div>
     <div class="empty" id="empty">
       <div class="big">🎙️</div>
-      <div id="t-empty">Record and transcribe live, split into chapters, recap<br>and suggest smart questions as you go!</div>
+      <div id="t-empty">Transcribe live, split into chapters, recap<br>and suggest smart questions as you go!</div>
     </div>
   </div>
 
@@ -265,11 +283,15 @@
 
   <div class="bar">
     <div class="side">
-      <div class="ghost" id="clear" title="Reset">⟲</div>
+      <div class="ghost" id="clear" title="Reset">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
+      </div>
       <small id="t-reset">Reset</small>
     </div>
     <div class="side">
-      <div class="ghost" id="copy" title="Copy transcript">⧉</div>
+      <div class="ghost" id="copy" title="Copy transcript">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+      </div>
       <small id="t-copy">Copy</small>
     </div>
     <button class="rec" id="rec" aria-label="Record">
@@ -278,7 +300,9 @@
       <span class="ico" id="ico"></span>
     </button>
     <div class="side">
-      <div class="ghost" id="export" title="Export Word">↧</div>
+      <div class="ghost" id="export" title="Export Word">
+        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m8 11 4 4 4-4"/><path d="M5 21h14"/></svg>
+      </div>
       <small id="t-export">Word</small>
     </div>
   </div>
@@ -301,6 +325,39 @@
       <button class="mbtn ghostb" id="keyClose" data-t="close">Close</button>
     </div>
     <div class="mnote" id="t-keyNote"><b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class="mlink" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
+  </div>
+</div>
+
+<div class="modal" id="setModal">
+  <div class="sheet">
+    <h3>⚙️ <span id="t-setTitle">Settings</span></h3>
+    <div class="set-group">
+      <div class="set-label" id="t-setModel">Claude model <span class="set-hint" id="t-setModelHint">(used when an API key is active)</span></div>
+      <div class="seg seg3" id="setModel">
+        <button data-v="haiku"><b id="t-mFast">Fast</b><span id="t-mFastS">Haiku · cheapest</span></button>
+        <button data-v="sonnet"><b id="t-mBal">Balanced</b><span id="t-mBalS">Sonnet</span></button>
+        <button data-v="opus"><b id="t-mAdv">Advanced</b><span id="t-mAdvS">Opus · priciest</span></button>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label" id="t-setVerb">Recap &amp; questions detail</div>
+      <div class="seg" id="setVerb">
+        <button data-v="short" data-t="vShort">Short</button>
+        <button data-v="medium" data-t="vMed">Medium</button>
+        <button data-v="long" data-t="vLong">Long</button>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label" id="t-setChap">Typical chapter length <span class="set-hint" id="t-setChapHint">(words)</span></div>
+      <div class="seg" id="setChap">
+        <button data-v="200">200</button>
+        <button data-v="300">300</button>
+        <button data-v="400">400</button>
+        <button data-v="500">500</button>
+        <button data-v="1000">1000</button>
+      </div>
+    </div>
+    <div class="mbtns"><button class="mbtn ghostb" id="setClose" data-t="close">Close</button></div>
   </div>
 </div>
 
@@ -328,8 +385,29 @@ const KEY_STORE="cc_anthropic_key";
 function getApiKey(){ try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } }
 function setApiKey(k){ try{ k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE); }catch(e){} }
 
+/* ---------- User settings (model / verbosity / chapter length) ---------- */
+const MODELS={ haiku:"claude-haiku-4-5-20251001", sonnet:"claude-sonnet-4-6", opus:"claude-opus-4-8" };
+/* Verbosity presets drive both the Claude prompts and the on-device fallback. */
+const VERB={
+  short: {recapPhrase:"1 short sentence", ovPhrase:"1 short sentence", secPhrase:"a brief phrase", qPhrase:"short and direct (max ~10 words each)", recapLen:90,  ovLen:110, secLen:90,  sents:1, pts:3},
+  medium:{recapPhrase:"1-2 sentences",    ovPhrase:"2 sentences",      secPhrase:"1 concise sentence", qPhrase:"concise",                        recapLen:150, ovLen:170, secLen:130, sents:2, pts:4},
+  long:  {recapPhrase:"3-4 sentences",    ovPhrase:"4-5 sentences",    secPhrase:"2-3 sentences",      qPhrase:"detailed and probing",            recapLen:320, ovLen:360, secLen:270, sents:4, pts:5}
+};
+const SET_STORE={model:"cc_model",verb:"cc_verb",chap:"cc_chaplen"};
+let settings={model:"sonnet",verb:"medium",chap:300};
+function loadSettings(){
+  try{
+    const m=localStorage.getItem(SET_STORE.model); if(m&&MODELS[m])settings.model=m;
+    const v=localStorage.getItem(SET_STORE.verb); if(v&&VERB[v])settings.verb=v;
+    const c=parseInt(localStorage.getItem(SET_STORE.chap),10); if([200,300,400,500,1000].includes(c))settings.chap=c;
+  }catch(e){}
+  applyChapterLen(settings.chap);
+}
+function saveSetting(k,v){ try{localStorage.setItem(SET_STORE[k],v);}catch(e){} settings[k]=v; if(k==="chap")applyChapterLen(v); }
+function verb(){ return VERB[settings.verb]||VERB.medium; }
+
 const LLM = {
-  model: "claude-sonnet-4-6",
+  get model(){ return MODELS[settings.model]||MODELS.sonnet; },
   get hasKey(){ return /^sk-/.test(getApiKey()); },
   get hasArtifact(){ return typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
   get enabled(){ return this.hasKey || this.hasArtifact; },
@@ -365,29 +443,30 @@ const LLM = {
   }
 };
 
-/* Prompt engineering — tuned for specific, substantive output */
+/* Prompt engineering — verbosity-aware (driven by the Settings panel) */
 function buildPrompt(text, lang, mode){
   const L = lang==="it" ? "Italian" : "English";
   const langRule = `Write ALL output text in ${L}, regardless of the transcript's language.`;
+  const v=verb();
   if(mode==="chapter"){
     return {
       system:`You analyze a short segment of a live conversation transcript (one topic/chapter). ${langRule} `+
         `The text is auto-generated speech-to-text and may have errors — infer intent. `+
         `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
-        `{"title": 3-6 word specific title, "recap": 1 concise sentence capturing the key point or decision, `+
-        `"questions": [3 sharp non-generic follow-up questions referencing concrete details from this segment; no yes/no, no filler]}`,
+        `{"title": 3-6 word specific title, "recap": ${v.recapPhrase} capturing the key point or decision, `+
+        `"questions": [3 sharp non-generic follow-up questions, ${v.qPhrase}, referencing concrete details from this segment; no yes/no, no filler]}`,
       user:`Transcript segment:\n"""${text}"""`
     };
   }
   return {
-    system:`You produce a CONCISE structured recap of the ENTIRE conversation, from the beginning to now, organized into coherent thematic sections in chronological order. ${langRule} `+
+    system:`You produce a structured recap of the ENTIRE conversation, from the beginning to now, organized into coherent thematic sections in chronological order. ${langRule} `+
       `The text is auto-generated speech-to-text and may have errors — infer intent. `+
-      `Be concrete but brief: capture only key decisions, facts, action items and open questions. Avoid generic phrasing and topic labels. `+
+      `Be concrete: capture key decisions, facts, action items and open questions. Avoid generic phrasing and topic labels. `+
       `Split the conversation into 2-6 coherent sections, each covering a distinct topic or phase. `+
       `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
-      `{"recap": short 1-2 sentence overview of the whole conversation, `+
-      `"sections": [{"title": 3-6 word specific section heading, "summary": 1 concise sentence capturing the essence of this part, "points": [2-4 short, information-dense bullet points]}], `+
-      `"questions": [exactly 3 important forward-looking questions to ask next, specific to the actual content]}`,
+      `{"recap": ${v.ovPhrase} overview of the whole conversation, `+
+      `"sections": [{"title": 3-6 word specific section heading, "summary": ${v.secPhrase} capturing the essence of this part, "points": [2-${v.pts} short, information-dense bullet points]}], `+
+      `"questions": [exactly 3 important forward-looking questions to ask next, ${v.qPhrase}, specific to the actual content]}`,
     user:`Full conversation transcript:\n"""${text}"""`
   };
 }
@@ -402,7 +481,7 @@ function parseJson(s){
 
 /* ---------- i18n ---------- */
 const I18N={
-  en:{tag:"Live conversation intelligence",empty:"Record and transcribe live, split into chapters, recap<br>and suggest smart questions as you go!",
+  en:{tag:"Live conversation intelligence",empty:"Transcribe live, split into chapters, recap<br>and suggest smart questions as you go!",
     reset:"Reset",export:"Word",copy:"Copy",listening:"Listening…",ready:"Tap record to begin",stopped:"Stopped",
     chapter:"Chapter",questions:"Smart questions",transcript:"Show transcript",recapbtn:"Recap so far",
     ovTitle:"Recap so far",topq:"Top 3 questions",keypoints:"Key points",
@@ -415,8 +494,12 @@ const I18N={
     keyTitle:"Connect Claude",keySub:"Paste your Anthropic API key to generate recaps and smart questions with Claude. It is stored only in this browser and sent only to Anthropic.",
     keyNote:"<b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
     save:"Save",clear:"Remove",close:"Close",connected:"● Connected — recaps use Claude",artifactOn:"● Connected via Claude app",notConnected:"○ Not connected — using on-device fallback",
-    keySaved:"Claude connected",keyRemoved:"Key removed",keyBad:"That doesn't look like an Anthropic key (sk-…)"},
-  it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Registra e trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
+    keySaved:"Claude connected",keyRemoved:"Key removed",keyBad:"That doesn't look like an Anthropic key (sk-…)",
+    setTitle:"Settings",setModel:"Claude model",setModelHint:"(used when an API key is active)",
+    mFast:"Fast",mFastS:"Haiku · cheapest",mBal:"Balanced",mBalS:"Sonnet",mAdv:"Advanced",mAdvS:"Opus · priciest",
+    setVerb:"Recap & questions detail",vShort:"Short",vMed:"Medium",vLong:"Long",
+    setChap:"Typical chapter length",setChapHint:"(words)",saved:"Settings saved"},
+  it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
     reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
     ovTitle:"Riepilogo finora",topq:"3 domande chiave",keypoints:"Punti chiave",
@@ -429,7 +512,11 @@ const I18N={
     keyTitle:"Connetti Claude",keySub:"Incolla la tua chiave API Anthropic per generare riepiloghi e domande intelligenti con Claude. È salvata solo in questo browser e inviata solo ad Anthropic.",
     keyNote:"<b>Tienila privata:</b> una chiave salvata nel browser può essere letta da chi usa questo dispositivo. Usa una chiave limitata a questo scopo e rimuovila al termine. Ottieni una chiave su <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
     save:"Salva",clear:"Rimuovi",close:"Chiudi",connected:"● Connesso — i riepiloghi usano Claude",artifactOn:"● Connesso tramite l'app Claude",notConnected:"○ Non connesso — uso il motore locale",
-    keySaved:"Claude connesso",keyRemoved:"Chiave rimossa",keyBad:"Non sembra una chiave Anthropic (sk-…)"}
+    keySaved:"Claude connesso",keyRemoved:"Chiave rimossa",keyBad:"Non sembra una chiave Anthropic (sk-…)",
+    setTitle:"Impostazioni",setModel:"Modello Claude",setModelHint:"(usato quando la chiave API è attiva)",
+    mFast:"Veloce",mFastS:"Haiku · economico",mBal:"Bilanciato",mBalS:"Sonnet",mAdv:"Avanzato",mAdvS:"Opus · costoso",
+    setVerb:"Dettaglio riepilogo e domande",vShort:"Breve",vMed:"Medio",vLong:"Lungo",
+    setChap:"Lunghezza tipica capitolo",setChapHint:"(parole)",saved:"Impostazioni salvate"}
 };
 let uiLang="en";
 function applyUI(){
@@ -443,6 +530,13 @@ function applyUI(){
   document.getElementById("t-keyTitle").textContent=d.keyTitle;
   document.getElementById("t-keySub").textContent=d.keySub;
   document.getElementById("t-keyNote").innerHTML=d.keyNote;
+  // settings labels
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set("t-setTitle",d.setTitle);set("t-setModelHint",d.setModelHint);set("t-setModel",d.setModel);
+  document.getElementById("t-setModel").innerHTML=d.setModel+` <span class="set-hint" id="t-setModelHint">${d.setModelHint}</span>`;
+  document.getElementById("t-setChap").innerHTML=d.setChap+` <span class="set-hint" id="t-setChapHint">${d.setChapHint}</span>`;
+  set("t-setVerb",d.setVerb);
+  set("t-mFast",d.mFast);set("t-mFastS",d.mFastS);set("t-mBal",d.mBal);set("t-mBalS",d.mBalS);set("t-mAdv",d.mAdv);set("t-mAdvS",d.mAdvS);
   document.querySelectorAll("[data-t]").forEach(b=>{b.textContent=d[b.dataset.t]||b.textContent;});
   updateKeyUI();
 }
@@ -509,7 +603,7 @@ function makeTitle(text,lang){const k=keywords(text,lang,3);return k.length?titl
 
 function sentencesOf(text){return text.split(/(?<=[.!?。…])\s+|\n+/).map(s=>s.trim()).filter(s=>s.length>10);}
 
-function makeRecap(text,lang,maxLen){
+function makeRecap(text,lang,maxLen,maxSents){
   const sents=sentencesOf(text);
   if(!sents.length)return text.slice(0,maxLen||240);
   const k=new Set(keywords(text,lang,8));
@@ -518,8 +612,8 @@ function makeRecap(text,lang,maxLen){
     if(i===0)sc+=1.2; // opening sentence often frames topic
     return {s,sc:sc+Math.min(s.length/90,1.4)};
   }).sort((a,b)=>b.sc-a.sc);
-  const lim=maxLen||240,take=[];let len=0;
-  for(const o of scored){if(len+o.s.length>lim&&take.length)break;take.push(o);len+=o.s.length;if(take.length>=2)break;}
+  const lim=maxLen||240,cap=maxSents||verb().sents,take=[];let len=0;
+  for(const o of scored){if(len+o.s.length>lim&&take.length)break;take.push(o);len+=o.s.length;if(take.length>=cap)break;}
   // preserve original order
   take.sort((a,b)=>sents.indexOf(a.s)-sents.indexOf(b.s));
   let out=take.map(x=>x.s).join(" ");
@@ -550,7 +644,7 @@ async function analyzeChapter(text){
   const lang=langMode==="it"?"it":"en";
   if(LLM.enabled){try{const r=await LLM.call(text,lang,"chapter");
     if(r&&r.title&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,text,_src:"llm"};}catch(e){}}
-  return{title:makeTitle(text,lang),recap:makeRecap(text,lang,120),questions:makeQuestions(text,lang,3),lang,text};
+  return{title:makeTitle(text,lang),recap:makeRecap(text,lang,verb().recapLen),questions:makeQuestions(text,lang,3),lang,text};
 }
 function makeBullets(text,lang){
   // Build an extensive, ordered set of bullet points spanning the whole transcript.
@@ -580,20 +674,21 @@ function makeBullets(text,lang){
 function makeSections(lang){
   // Build coherent sections from the whole conversation, in order.
   // Each committed chapter is already a coherent topic → one section.
+  const pts=verb().pts;
   const secs=chapters.map(c=>({
     title:c.title,
     summary:c.recap,
-    points:makeBullets(c.text,lang).slice(0,4)
+    points:makeBullets(c.text,lang).slice(0,pts)
   }));
   // Include the uncommitted tail (current buffer) as a final section if it has substance.
   const tail=curBuf.trim();
   if(tail.split(/\s+/).filter(Boolean).length>=MIN_WORDS){
-    secs.push({title:makeTitle(tail,lang),summary:makeRecap(tail,lang,120),points:makeBullets(tail,lang).slice(0,4)});
+    secs.push({title:makeTitle(tail,lang),summary:makeRecap(tail,lang,verb().secLen),points:makeBullets(tail,lang).slice(0,pts)});
   }
   // If nothing was chaptered yet, derive a single section from everything captured.
   if(!secs.length){
     const t=allText();
-    if(t)secs.push({title:makeTitle(t,lang),summary:makeRecap(t,lang,150),points:makeBullets(t,lang).slice(0,5)});
+    if(t)secs.push({title:makeTitle(t,lang),summary:makeRecap(t,lang,verb().secLen),points:makeBullets(t,lang).slice(0,pts)});
   }
   return secs;
 }
@@ -601,18 +696,16 @@ async function analyzeOverview(text){
   const lang=langMode==="it"?"it":"en";
   if(LLM.enabled){try{const r=await LLM.call(text,lang,"overview");
     if(r&&r.recap&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,_src:"llm"};}catch(e){}}
-  return{recap:makeRecap(text,lang,140),sections:makeSections(lang),questions:makeQuestions(text,lang,3),lang};
+  return{recap:makeRecap(text,lang,verb().ovLen),sections:makeSections(lang),questions:makeQuestions(text,lang,3),lang};
 }
 
 /* ---------- Concept-based chapter splitting ----------
-   Chapters are intentionally long so the conversation isn't chopped up.
-   - First chunk waits for a solid base (>=110 words).
-   - After that, a new chapter forms when EITHER:
-       a) a clear topic shift is detected on an already-substantial chunk, OR
-       b) the chunk gets long (>=320 words), OR
-       c) a long pause (>=9s) lands on a substantial chunk.
+   Chapter length is set in Settings (typical words per chapter). A new chapter
+   forms when EITHER: a clear topic shift on an already-substantial chunk, the
+   chunk reaches the target length, or a long pause (>=9s) on a substantial chunk.
 */
-const FIRST_MIN=110, MIN_WORDS=110, MAX_WORDS=320, PAUSE_MS=9000;
+let FIRST_MIN=195, MIN_WORDS=195, MAX_WORDS=300; const PAUSE_MS=9000;
+function applyChapterLen(n){ MAX_WORDS=n; MIN_WORDS=Math.max(40,Math.round(n*0.65)); FIRST_MIN=MIN_WORDS; }
 let recentSentences=[]; // for topic-shift comparison
 
 function topicShift(){
@@ -1005,7 +1098,7 @@ $("#export").addEventListener("click",()=>{
   const ov=lastOverview;   // use the structured recap built by "Recap so far"
   const dt=new Date().toLocaleString(uiLang==="it"?"it-IT":"en-US");
 
-  let body=`<h1>Companion &mdash; ${esc(d.ovTitle)}</h1>`;
+  let body=`<h1>Smart reporter &mdash; ${esc(d.ovTitle)}</h1>`;
   body+=`<p style="color:#666;font-size:11pt">${esc(dt)} &middot; ${totalWords()} ${esc(d.words)}</p>`;
 
   if(ov && ov.recap){
@@ -1047,7 +1140,7 @@ $("#export").addEventListener("click",()=>{
     });
   }
 
-  const docHtml=`<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Companion</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>
+  const docHtml=`<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Smart reporter</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>
     @page{margin:2.2cm}
     body{font-family:Calibri,Arial,sans-serif;font-size:11.5pt;line-height:1.5;color:#222}
     h1{font-size:22pt;color:#1a4d8f;margin:0 0 4pt}
@@ -1100,7 +1193,29 @@ $("#keySave").addEventListener("click",()=>{
 });
 $("#keyClear").addEventListener("click",()=>{setApiKey("");keyInput.value="";updateKeyUI();tt(I18N[uiLang].keyRemoved);});
 
-applyUI();updateRecapBtn();updateKeyUI();
+/* ---------- Settings modal ---------- */
+const setModal=$("#setModal");
+function syncSeg(id,val){const el=$("#"+id);if(el)[...el.children].forEach(x=>x.classList.toggle("on",x.dataset.v===String(val)));}
+function syncSettings(){syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setChap",settings.chap);}
+function openSet(){syncSettings();setModal.classList.add("show");}
+function closeSet(){setModal.classList.remove("show");}
+$("#setBtn").addEventListener("click",openSet);
+$("#setClose").addEventListener("click",closeSet);
+setModal.addEventListener("click",e=>{if(e.target===setModal)closeSet();});
+function bindSeg(id,key,cast){
+  $("#"+id).addEventListener("click",e=>{
+    const b=e.target.closest("button");if(!b)return;
+    saveSetting(key, cast?cast(b.dataset.v):b.dataset.v);
+    syncSeg(id, key==="chap"?settings.chap:settings[key]);
+    tt(I18N[uiLang].saved);
+  });
+}
+bindSeg("setModel","model");
+bindSeg("setVerb","verb");
+bindSeg("setChap","chap",v=>parseInt(v,10));
+
+loadSettings();
+applyUI();updateRecapBtn();updateKeyUI();syncSettings();
 </script>
 </body>
 </html>
