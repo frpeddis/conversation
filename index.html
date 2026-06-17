@@ -250,14 +250,13 @@
       <div><h1 id="t-title">Smart reporter</h1><p id="t-tag">Live conversation intelligence</p></div>
     </div>
     <div style="display:flex;align-items:center;gap:9px">
+      <div class="keybtn" id="clear" title="Reset">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
+      </div>
       <div class="keybtn" id="setBtn" title="Settings">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </div>
       <div class="keybtn" id="keyBtn" title="Connect Claude (API key)">🔑</div>
-      <div class="lang" id="lang">
-        <button data-l="en" class="on">EN</button>
-        <button data-l="it">IT</button>
-      </div>
     </div>
   </div>
 
@@ -282,12 +281,6 @@
   <button class="recapBtn" id="recapBtn"><span class="em">✨</span><span id="t-recapbtn">Recap so far</span></button>
 
   <div class="bar">
-    <div class="side">
-      <div class="ghost" id="clear" title="Reset">
-        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
-      </div>
-      <small id="t-reset">Reset</small>
-    </div>
     <div class="side">
       <div class="ghost" id="copy" title="Copy transcript">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
@@ -332,6 +325,20 @@
   <div class="sheet">
     <h3>⚙️ <span id="t-setTitle">Settings</span></h3>
     <div class="set-group">
+      <div class="set-label" id="t-setSpeech">Spoken language <span class="set-hint" id="t-setSpeechHint">(transcription)</span></div>
+      <div class="seg" id="setSpeech">
+        <button data-v="en">English</button>
+        <button data-v="it">Italiano</button>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label" id="t-setOut">Recap &amp; questions language</div>
+      <div class="seg" id="setOut">
+        <button data-v="en">English</button>
+        <button data-v="it">Italiano</button>
+      </div>
+    </div>
+    <div class="set-group">
       <div class="set-label" id="t-setModel">Claude model <span class="set-hint" id="t-setModelHint">(used when an API key is active)</span></div>
       <div class="seg seg3" id="setModel">
         <button data-v="haiku"><b id="t-mFast">Fast</b><span id="t-mFastS">Haiku · cheapest</span></button>
@@ -350,6 +357,7 @@
     <div class="set-group">
       <div class="set-label" id="t-setChap">Typical chapter length <span class="set-hint" id="t-setChapHint">(words)</span></div>
       <div class="seg" id="setChap">
+        <button data-v="100">100</button>
         <button data-v="200">200</button>
         <button data-v="300">300</button>
         <button data-v="400">400</button>
@@ -393,18 +401,22 @@ const VERB={
   medium:{recapPhrase:"1-2 sentences",    ovPhrase:"2 sentences",      secPhrase:"1 concise sentence", qPhrase:"concise",                        recapLen:150, ovLen:170, secLen:130, sents:2, pts:4},
   long:  {recapPhrase:"3-4 sentences",    ovPhrase:"4-5 sentences",    secPhrase:"2-3 sentences",      qPhrase:"detailed and probing",            recapLen:320, ovLen:360, secLen:270, sents:4, pts:5}
 };
-const SET_STORE={model:"cc_model",verb:"cc_verb",chap:"cc_chaplen"};
-let settings={model:"sonnet",verb:"medium",chap:300};
+const SET_STORE={model:"cc_model",verb:"cc_verb",chap:"cc_chaplen",speech:"cc_speech",out:"cc_out"};
+const CHAP_OPTS=[100,200,300,400,500,1000];
+let settings={model:"haiku",verb:"short",chap:100,speech:"en",out:"en"};
 function loadSettings(){
   try{
     const m=localStorage.getItem(SET_STORE.model); if(m&&MODELS[m])settings.model=m;
     const v=localStorage.getItem(SET_STORE.verb); if(v&&VERB[v])settings.verb=v;
-    const c=parseInt(localStorage.getItem(SET_STORE.chap),10); if([200,300,400,500,1000].includes(c))settings.chap=c;
+    const c=parseInt(localStorage.getItem(SET_STORE.chap),10); if(CHAP_OPTS.includes(c))settings.chap=c;
+    const s=localStorage.getItem(SET_STORE.speech); if(s==="en"||s==="it")settings.speech=s;
+    const o=localStorage.getItem(SET_STORE.out); if(o==="en"||o==="it")settings.out=o;
   }catch(e){}
+  uiLang=settings.out;
   applyChapterLen(settings.chap);
 }
 function saveSetting(k,v){ try{localStorage.setItem(SET_STORE[k],v);}catch(e){} settings[k]=v; if(k==="chap")applyChapterLen(v); }
-function verb(){ return VERB[settings.verb]||VERB.medium; }
+function verb(){ return VERB[settings.verb]||VERB.short; }
 
 const LLM = {
   get model(){ return MODELS[settings.model]||MODELS.sonnet; },
@@ -498,7 +510,8 @@ const I18N={
     setTitle:"Settings",setModel:"Claude model",setModelHint:"(used when an API key is active)",
     mFast:"Fast",mFastS:"Haiku · cheapest",mBal:"Balanced",mBalS:"Sonnet",mAdv:"Advanced",mAdvS:"Opus · priciest",
     setVerb:"Recap & questions detail",vShort:"Short",vMed:"Medium",vLong:"Long",
-    setChap:"Typical chapter length",setChapHint:"(words)",saved:"Settings saved"},
+    setChap:"Typical chapter length",setChapHint:"(words)",saved:"Settings saved",
+    setSpeech:"Spoken language",setSpeechHint:"(transcription)",setOut:"Recap & questions language"},
   it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
     reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
@@ -516,14 +529,14 @@ const I18N={
     setTitle:"Impostazioni",setModel:"Modello Claude",setModelHint:"(usato quando la chiave API è attiva)",
     mFast:"Veloce",mFastS:"Haiku · economico",mBal:"Bilanciato",mBalS:"Sonnet",mAdv:"Avanzato",mAdvS:"Opus · costoso",
     setVerb:"Dettaglio riepilogo e domande",vShort:"Breve",vMed:"Medio",vLong:"Lungo",
-    setChap:"Lunghezza tipica capitolo",setChapHint:"(parole)",saved:"Impostazioni salvate"}
+    setChap:"Lunghezza tipica capitolo",setChapHint:"(parole)",saved:"Impostazioni salvate",
+    setSpeech:"Lingua parlata",setSpeechHint:"(trascrizione)",setOut:"Lingua di riepilogo e domande"}
 };
 let uiLang="en";
 function applyUI(){
   const d=I18N[uiLang];
   document.getElementById("t-tag").innerHTML=d.tag;
   document.getElementById("t-empty").innerHTML=d.empty;
-  document.getElementById("t-reset").textContent=d.reset;
   document.getElementById("t-copy").textContent=d.copy;
   document.getElementById("t-export").textContent=d.export;
   document.getElementById("t-recapbtn").textContent=d.recapbtn;
@@ -535,6 +548,8 @@ function applyUI(){
   set("t-setTitle",d.setTitle);set("t-setModelHint",d.setModelHint);set("t-setModel",d.setModel);
   document.getElementById("t-setModel").innerHTML=d.setModel+` <span class="set-hint" id="t-setModelHint">${d.setModelHint}</span>`;
   document.getElementById("t-setChap").innerHTML=d.setChap+` <span class="set-hint" id="t-setChapHint">${d.setChapHint}</span>`;
+  document.getElementById("t-setSpeech").innerHTML=d.setSpeech+` <span class="set-hint">${d.setSpeechHint}</span>`;
+  set("t-setOut",d.setOut);
   set("t-setVerb",d.setVerb);
   set("t-mFast",d.mFast);set("t-mFastS",d.mFastS);set("t-mBal",d.mBal);set("t-mBalS",d.mBalS);set("t-mAdv",d.mAdv);set("t-mAdvS",d.mAdvS);
   document.querySelectorAll("[data-t]").forEach(b=>{b.textContent=d[b.dataset.t]||b.textContent;});
@@ -542,7 +557,7 @@ function applyUI(){
 }
 
 /* ---------- State ---------- */
-let recog=null, recording=false, langMode="en";
+let recog=null, recording=false;
 let interim="", chapters=[], curBuf="", fullText="", lastTs=0;
 let audioCtx=null, analyser=null, rafId=null, micStream=null, micReady=false;
 let isFirstChapter=true, lastOverview=null;
@@ -632,8 +647,8 @@ const Q_TPL={
     k=>`Cosa ci farebbe cambiare idea su ${k}?`,k=>`Qual è il rischio se ${k} slitta?`,
     k=>`Abbiamo l'allineamento degli stakeholder su ${k}?`]
 };
-function makeQuestions(text,lang,count){
-  const k=keywords(text,lang,6),tpl=Q_TPL[lang],idx=[0,2,3,5,6,1],picks=[];
+function makeQuestions(text,srcLang,tplLang,count){
+  const k=keywords(text,srcLang,6),tpl=Q_TPL[tplLang]||Q_TPL.en,idx=[0,2,3,5,6,1],picks=[];
   const want=count||3;
   if(!k.length)return [tpl[0]("this"),tpl[2]("this")].slice(0,want);
   for(let i=0;i<want;i++){picks.push(tpl[idx[i%idx.length]](k[i%k.length]));}
@@ -641,10 +656,10 @@ function makeQuestions(text,lang,count){
 }
 
 async function analyzeChapter(text){
-  const lang=langMode==="it"?"it":"en";
-  if(LLM.enabled){try{const r=await LLM.call(text,lang,"chapter");
-    if(r&&r.title&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,text,_src:"llm"};}catch(e){}}
-  return{title:makeTitle(text,lang),recap:makeRecap(text,lang,verb().recapLen),questions:makeQuestions(text,lang,3),lang,text};
+  const out=settings.out, src=settings.speech;   // out = recap/questions language; src = transcript language
+  if(LLM.enabled){try{const r=await LLM.call(text,out,"chapter");
+    if(r&&r.title&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang:src,text,_src:"llm"};}catch(e){}}
+  return{title:makeTitle(text,src),recap:makeRecap(text,src,verb().recapLen),questions:makeQuestions(text,src,out,3),lang:src,text};
 }
 function makeBullets(text,lang){
   // Build an extensive, ordered set of bullet points spanning the whole transcript.
@@ -693,10 +708,10 @@ function makeSections(lang){
   return secs;
 }
 async function analyzeOverview(text){
-  const lang=langMode==="it"?"it":"en";
-  if(LLM.enabled){try{const r=await LLM.call(text,lang,"overview");
-    if(r&&r.recap&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang,_src:"llm"};}catch(e){}}
-  return{recap:makeRecap(text,lang,verb().ovLen),sections:makeSections(lang),questions:makeQuestions(text,lang,3),lang};
+  const out=settings.out, src=settings.speech;
+  if(LLM.enabled){try{const r=await LLM.call(text,out,"overview");
+    if(r&&r.recap&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang:src,_src:"llm"};}catch(e){}}
+  return{recap:makeRecap(text,src,verb().ovLen),sections:makeSections(src),questions:makeQuestions(text,src,out,3),lang:src};
 }
 
 /* ---------- Concept-based chapter splitting ----------
@@ -714,7 +729,7 @@ function topicShift(){
   if(sents.length<3)return false;
   const recent=sents.slice(-2).join(" ");
   const earlier=sents.slice(0,-2).join(" ");
-  const lang=langMode==="it"?"it":"en";
+  const lang=settings.speech;
   const a=contentSet(earlier,lang),b=contentSet(recent,lang);
   if(b.size<3)return false;
   let overlap=0;b.forEach(w=>{if(a.has(w))overlap++;});
@@ -733,7 +748,7 @@ async function commitChapter(){
   curBuf="";segments=[];
   // Push the section immediately (pending) so the transcript window keeps showing
   // everything while the recap is being generated; fill in title/recap when ready.
-  const ch={id:Date.now(),title:"",recap:"",questions:[],text,lang:(langMode==="it"?"it":"en"),words:w,segments:segs,isNew:false,pending:true};
+  const ch={id:Date.now(),title:"",recap:"",questions:[],text,lang:settings.speech,words:w,segments:segs,isNew:false,pending:true};
   chapters.push(ch);
   isFirstChapter=false;
   refreshChapters();renderLive();
@@ -919,7 +934,7 @@ function endSentence(){
 }
 
 /* ---------- Speech recognition ---------- */
-function pickLang(){return langMode==="it"?"it-IT":"en-US";}
+function pickLang(){return settings.speech==="it"?"it-IT":"en-US";}
 /* Append a finalized phrase. We do NOT punctuate every phrase — consecutive
    phrases from the same speaker are joined with a space and only become
    separate sentences when a pause (endSentence) or a speaker turn occurs. */
@@ -1161,15 +1176,6 @@ $("#export").addEventListener("click",()=>{
   tt(d.exported);
 });
 
-$("#lang").addEventListener("click",e=>{
-  const b=e.target.closest("button");if(!b)return;
-  [...e.currentTarget.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");
-  langMode=b.dataset.l;
-  uiLang=langMode==="it"?"it":"en";
-  applyUI();refreshChapters();
-  if(recording&&recog){recog.lang=pickLang();try{recog.stop();}catch(_){}}
-  tt("→ "+langMode.toUpperCase());
-});
 
 /* ---------- API key modal ---------- */
 function updateKeyUI(){
@@ -1196,7 +1202,7 @@ $("#keyClear").addEventListener("click",()=>{setApiKey("");keyInput.value="";upd
 /* ---------- Settings modal ---------- */
 const setModal=$("#setModal");
 function syncSeg(id,val){const el=$("#"+id);if(el)[...el.children].forEach(x=>x.classList.toggle("on",x.dataset.v===String(val)));}
-function syncSettings(){syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setChap",settings.chap);}
+function syncSettings(){syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setChap",settings.chap);syncSeg("setSpeech",settings.speech);syncSeg("setOut",settings.out);}
 function openSet(){syncSettings();setModal.classList.add("show");}
 function closeSet(){setModal.classList.remove("show");}
 $("#setBtn").addEventListener("click",openSet);
@@ -1213,6 +1219,21 @@ function bindSeg(id,key,cast){
 bindSeg("setModel","model");
 bindSeg("setVerb","verb");
 bindSeg("setChap","chap",v=>parseInt(v,10));
+
+// Spoken language → drives speech recognition (restart if recording)
+$("#setSpeech").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  saveSetting("speech",b.dataset.v);syncSeg("setSpeech",settings.speech);
+  if(recording&&recog){recog.lang=pickLang();try{recog.stop();}catch(_){}}
+  tt(I18N[uiLang].saved);
+});
+// Recap & questions language → also the UI/chrome language
+$("#setOut").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  saveSetting("out",b.dataset.v);uiLang=settings.out;
+  applyUI();refreshChapters();syncSettings();
+  tt(I18N[uiLang].saved);
+});
 
 loadSettings();
 applyUI();updateRecapBtn();updateKeyUI();syncSettings();
