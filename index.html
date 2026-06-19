@@ -245,6 +245,33 @@
   .seg button:active{transform:scale(.95)}
   .seg button.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 14px rgba(79,140,255,.45)}
   .seg button.on span{opacity:.92}
+
+  /* Context / History / Ask panels */
+  .ctx-area{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--line);color:var(--txt);border-radius:12px;
+    padding:11px 12px;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical;margin-bottom:10px}
+  .ctx-area:focus{outline:none;border-color:var(--accent)}
+  .ctx-files{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  .ctx-file{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px}
+  .ctx-file .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ctx-file .sz{color:var(--mut);font-size:10px;flex:none}
+  .ctx-file .rm{flex:none;cursor:pointer;color:var(--hot);font-weight:800;border:0;background:transparent;font-size:15px}
+  .hist-list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto;margin-bottom:12px}
+  .hist-list::-webkit-scrollbar{display:none}
+  .hist-empty{color:var(--mut);font-size:12px;text-align:center;padding:18px 0}
+  .hist-item{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:13px;padding:11px 12px}
+  .hist-item .meta{flex:1;min-width:0}
+  .hist-item .ti{font-size:13.5px;font-weight:700;letter-spacing:-.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hist-item .sub{font-size:10.5px;color:var(--mut);margin-top:2px}
+  .hist-item button{flex:none;border:0;border-radius:9px;padding:8px 11px;font-family:inherit;font-weight:800;font-size:11.5px;cursor:pointer;transition:.15s}
+  .hist-item button:active{transform:scale(.94)}
+  .hist-item .open{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+  .hist-item .del{background:rgba(255,77,109,.16);color:var(--hot);border:1px solid rgba(255,77,109,.4)}
+  .ask-log{display:flex;flex-direction:column;gap:10px;max-height:44vh;overflow-y:auto;margin-bottom:11px}
+  .ask-log::-webkit-scrollbar{display:none}
+  .ask-q{align-self:flex-end;max-width:88%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:14px 14px 4px 14px;padding:9px 12px;font-size:13px;line-height:1.45}
+  .ask-a{align-self:flex-start;max-width:92%;background:rgba(0,0,0,.24);border:1px solid var(--line);color:var(--txt);border-radius:14px 14px 14px 4px;padding:10px 12px;font-size:13px;line-height:1.55;white-space:pre-wrap}
+  .ask-a.think{color:var(--mut);font-style:italic}
+  .ask-hint{color:var(--mut);font-size:12px;text-align:center;padding:14px 0}
 </style>
 </head>
 <body>
@@ -254,7 +281,16 @@
       <div class="logo">◎</div>
       <div><h1 id="t-title">Smart reporter</h1><p id="t-tag">Live conversation intelligence</p></div>
     </div>
-    <div style="display:flex;align-items:center;gap:9px">
+    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end">
+      <div class="keybtn" id="ctxBtn" title="Context">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path d="M8 13h8M8 17h6"/></svg>
+      </div>
+      <div class="keybtn" id="askBtn" title="Ask the transcript">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5z"/><path d="M9.2 9.3a2.8 2.8 0 0 1 5.3 1c0 1.9-2.8 2.5-2.8 2.5"/><path d="M12 16.5h.01"/></svg>
+      </div>
+      <div class="keybtn" id="histBtn" title="Saved sessions">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v6h6"/><path d="M3.5 9a9 9 0 1 0 2.1-3.4L3 9"/><path d="M12 8v5l3 2"/></svg>
+      </div>
       <div class="keybtn" id="clear" title="Reset">
         <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.64-6.36L3 8"/><path d="M3 3v5h5"/></svg>
       </div>
@@ -298,10 +334,10 @@
       <span class="ico" id="ico"></span>
     </button>
     <div class="side">
-      <div class="ghost" id="export" title="Export Txt">
+      <div class="ghost" id="export" title="Export Word">
         <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="m8 11 4 4 4-4"/><path d="M5 21h14"/></svg>
       </div>
-      <small id="t-export">Txt</small>
+      <small id="t-export">Word</small>
     </div>
   </div>
 
@@ -352,11 +388,20 @@
       </div>
     </div>
     <div class="set-group">
-      <div class="set-label" id="t-setVerb">Recap &amp; questions detail</div>
+      <div class="set-label" id="t-setVerb">Recap detail</div>
       <div class="seg" id="setVerb">
         <button data-v="short" data-t="vShort">Short</button>
         <button data-v="medium" data-t="vMed">Medium</button>
         <button data-v="long" data-t="vLong">Long</button>
+      </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label" id="t-setNq">Smart questions <span class="set-hint" id="t-setNqHint">(per recap/chapter)</span></div>
+      <div class="seg" id="setNq">
+        <button data-v="0">0</button>
+        <button data-v="1">1</button>
+        <button data-v="2">2</button>
+        <button data-v="3">3</button>
       </div>
     </div>
     <div class="set-group">
@@ -385,6 +430,47 @@
   </div>
 </div>
 
+<div class="modal" id="ctxModal">
+  <div class="sheet">
+    <h3>🧭 <span id="t-ctxTitle">Conversation context</span></h3>
+    <div class="sub" id="t-ctxSub">Describe the goal of the conversation and attach documents to discuss. This is added to the start of the prompt to guide recaps and questions.</div>
+    <textarea id="ctxObjective" class="ctx-area" rows="4" placeholder="Objective / agenda…"></textarea>
+    <div class="ctx-files" id="ctxFiles"></div>
+    <div class="mbtns">
+      <button class="mbtn ghostb" id="ctxAttach" data-t="attach">Attach files</button>
+      <button class="mbtn save" id="ctxSave" data-t="save">Save</button>
+      <button class="mbtn ghostb" id="ctxClose" data-t="close">Close</button>
+    </div>
+    <input type="file" id="ctxFileInput" multiple style="display:none">
+    <div class="mnote" id="t-ctxNote">Text from .txt/.md/.csv/.json/.html files is read and included. Other formats (PDF, Word, PowerPoint) attach by name only — paste key text into the box above for best results.</div>
+  </div>
+</div>
+
+<div class="modal" id="histModal">
+  <div class="sheet">
+    <h3>🗂️ <span id="t-histTitle">Saved sessions</span></h3>
+    <div class="keyrow">
+      <input id="histName" type="text" placeholder="Session title…" autocomplete="off">
+      <button class="eye" id="histSave" title="Save current">💾</button>
+    </div>
+    <div class="hist-list" id="histList"></div>
+    <div class="mbtns"><button class="mbtn ghostb" id="histClose" data-t="close">Close</button></div>
+  </div>
+</div>
+
+<div class="modal" id="askModal">
+  <div class="sheet">
+    <h3>💬 <span id="t-askTitle">Ask the transcript</span></h3>
+    <div class="sub" id="t-askSub">Ask anything about what was said. Answers use the transcript and your context via Claude.</div>
+    <div class="ask-log" id="askLog"></div>
+    <div class="keyrow">
+      <input id="askInput" type="text" placeholder="Ask a question…" autocomplete="off">
+      <button class="eye" id="askSend" title="Send">➤</button>
+    </div>
+    <div class="mbtns"><button class="mbtn ghostb" id="askClose" data-t="close">Close</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -409,17 +495,18 @@ const KEY_STORE="cc_anthropic_key";
 function getApiKey(){ try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } }
 function setApiKey(k){ try{ k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE); }catch(e){} }
 
-/* ---------- User settings (model / verbosity / chapter length) ---------- */
+/* ---------- User settings (model / recap detail / #questions / chapter length / languages) ---------- */
 const MODELS={ haiku:"claude-haiku-4-5-20251001", sonnet:"claude-sonnet-4-6", opus:"claude-opus-4-8" };
-/* Verbosity presets drive both the Claude prompts and the on-device fallback. */
+/* Recap-detail presets drive both the Claude prompts and the on-device fallback. */
 const VERB={
   short: {recapPhrase:"1 short sentence", ovPhrase:"1 short sentence", secPhrase:"a brief phrase", qPhrase:"short and direct (max ~10 words each)", recapLen:90,  ovLen:110, secLen:90,  sents:1, pts:3},
   medium:{recapPhrase:"1-2 sentences",    ovPhrase:"2 sentences",      secPhrase:"1 concise sentence", qPhrase:"concise",                        recapLen:150, ovLen:170, secLen:130, sents:2, pts:4},
   long:  {recapPhrase:"3-4 sentences",    ovPhrase:"4-5 sentences",    secPhrase:"2-3 sentences",      qPhrase:"detailed and probing",            recapLen:320, ovLen:360, secLen:270, sents:4, pts:5}
 };
-const SET_STORE={model:"cc_model",verb:"cc_verb",chap:"cc_chaplen",speech:"cc_speech",out:"cc_out"};
+const SET_STORE={model:"cc_model",verb:"cc_verb",chap:"cc_chaplen",speech:"cc_speech",out:"cc_out",nq:"cc_nq"};
 const CHAP_OPTS=[100,200,300,400,500,1000];
-let settings={model:"haiku",verb:"short",chap:100,speech:"en",out:"en"};
+const NQ_OPTS=[0,1,2,3];
+let settings={model:"haiku",verb:"short",chap:100,speech:"en",out:"en",nq:3};
 function loadSettings(){
   try{
     const m=localStorage.getItem(SET_STORE.model); if(m&&MODELS[m])settings.model=m;
@@ -427,6 +514,7 @@ function loadSettings(){
     const c=parseInt(localStorage.getItem(SET_STORE.chap),10); if(CHAP_OPTS.includes(c))settings.chap=c;
     const s=localStorage.getItem(SET_STORE.speech); if(s==="en"||s==="it")settings.speech=s;
     const o=localStorage.getItem(SET_STORE.out); if(o==="en"||o==="it")settings.out=o;
+    const n=parseInt(localStorage.getItem(SET_STORE.nq),10); if(NQ_OPTS.includes(n))settings.nq=n;
   }catch(e){}
   uiLang=settings.out;
   applyChapterLen(settings.chap);
@@ -434,68 +522,85 @@ function loadSettings(){
 function saveSetting(k,v){ try{localStorage.setItem(SET_STORE[k],v);}catch(e){} settings[k]=v; if(k==="chap")applyChapterLen(v); }
 function verb(){ return VERB[settings.verb]||VERB.short; }
 
+/* ---------- Conversation context (objective + attached documents) ---------- */
+const CTX_STORE="cc_context";
+let context={objective:"",files:[]};   // files: {name, text}
+function loadContext(){ try{const c=JSON.parse(localStorage.getItem(CTX_STORE)); if(c&&typeof c==="object"){context.objective=c.objective||"";context.files=Array.isArray(c.files)?c.files:[];}}catch(e){} }
+function saveContext(){ try{localStorage.setItem(CTX_STORE,JSON.stringify(context));}catch(e){} }
+function hasContext(){ return !!((context.objective&&context.objective.trim())||(context.files&&context.files.length)); }
+function contextBlock(){
+  const parts=[];
+  if(context.objective&&context.objective.trim())parts.push("Objective: "+context.objective.trim());
+  (context.files||[]).forEach(f=>parts.push(f.text?`Document "${f.name}":\n${f.text}`:`Attached file (not parsed): ${f.name}`));
+  let out=parts.join("\n\n").trim();
+  if(out.length>7000)out=out.slice(0,7000)+"…";
+  return out;
+}
+
 const LLM = {
   get model(){ return MODELS[settings.model]||MODELS.sonnet; },
   get hasKey(){ return /^sk-/.test(getApiKey()); },
   get hasArtifact(){ return typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
   get enabled(){ return this.hasKey || this.hasArtifact; },
 
-  async call(text, lang, mode){
-    const {system,user}=buildPrompt(text,lang,mode);
-    // 1) Direct Anthropic API with the user's own key
+  // Low-level: send system+user, return raw text (or null if no LLM available).
+  async _raw(system, user, maxTokens){
     if(this.hasKey){
       const resp=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
-        headers:{
-          "content-type":"application/json",
-          "x-api-key":getApiKey(),
-          "anthropic-version":"2023-06-01",
-          "anthropic-dangerous-direct-browser-access":"true"
-        },
-        body:JSON.stringify({
-          model:this.model,
-          max_tokens: mode==="overview"?1600:700,
-          system,
-          messages:[{role:"user",content:user+"\n\nReturn ONLY the JSON object described above. No prose, no markdown, no backticks."}]
-        })
+        headers:{"content-type":"application/json","x-api-key":getApiKey(),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:this.model,max_tokens:maxTokens||800,system,messages:[{role:"user",content:user}]})
       });
-      if(!resp.ok){ throw new Error("API "+resp.status+" "+(await resp.text().catch(()=>""))); }
+      if(!resp.ok)throw new Error("API "+resp.status+" "+(await resp.text().catch(()=>"")));
       const data=await resp.json();
-      const raw=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
-      return parseJson(raw);
+      return (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
     }
-    // 2) Claude artifact runtime
-    const prompt = system + "\n\n" + user + "\n\nReturn ONLY the JSON object described above. No prose, no markdown, no backticks.";
-    const raw = await window.claude.complete(prompt);
+    if(this.hasArtifact)return await window.claude.complete(system+"\n\n"+user);
+    return null;
+  },
+  async call(text, lang, mode){
+    const {system,user}=buildPrompt(text,lang,mode);
+    const raw=await this._raw(system, user+"\n\nReturn ONLY the JSON object described above. No prose, no markdown, no backticks.", mode==="overview"?1600:700);
     return parseJson(raw);
+  },
+  // Free-text answer to a user question about the transcript.
+  async ask(question){
+    const L=settings.out==="it"?"Italian":"English";
+    const ctx=contextBlock(), transcript=fullTranscript();
+    const system=`You answer questions about a conversation/meeting transcript. Use ONLY the transcript and the provided context; if the answer isn't there, say you can't find it in the conversation. Be concise and concrete. Answer in ${L}.`;
+    const user=(ctx?`Context:\n"""${ctx}"""\n\n`:"")+`Transcript:\n"""${transcript}"""\n\nQuestion: ${question}`;
+    return await this._raw(system, user, 800);
   }
 };
 
-/* Prompt engineering — verbosity-aware (driven by the Settings panel) */
+/* Prompt engineering — recap-detail + question-count + context aware */
 function buildPrompt(text, lang, mode){
   const L = lang==="it" ? "Italian" : "English";
   const langRule = `Write ALL output text in ${L}, regardless of the transcript's language.`;
-  const v=verb();
+  const v=verb(), nq=settings.nq, ctx=contextBlock();
+  const ctxSys = ctx?`Use the user's background context to interpret the conversation and tailor the recap and questions. `:"";
+  const ctxUser = ctx?`Background context (objective and/or documents to discuss):\n"""${ctx}"""\n\n`:"";
+  const qPart = nq>0
+    ? `, "questions": [exactly ${nq} sharp non-generic ${mode==="chapter"?"follow-up":"forward-looking"} question(s), ${v.qPhrase}, ${mode==="chapter"?"referencing concrete details from this segment":"specific to the actual content"}; no yes/no, no filler]`
+    : "";
   if(mode==="chapter"){
     return {
-      system:`You analyze a short segment of a live conversation transcript (one topic/chapter). ${langRule} `+
+      system:`You analyze a short segment of a live conversation transcript (one topic/chapter). ${langRule} ${ctxSys}`+
         `The text is auto-generated speech-to-text and may have errors — infer intent. `+
         `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
-        `{"title": 3-6 word specific title, "recap": ${v.recapPhrase} capturing the key point or decision, `+
-        `"questions": [3 sharp non-generic follow-up questions, ${v.qPhrase}, referencing concrete details from this segment; no yes/no, no filler]}`,
-      user:`Transcript segment:\n"""${text}"""`
+        `{"title": 3-6 word specific title, "recap": ${v.recapPhrase} capturing the key point or decision${qPart}}`,
+      user:`${ctxUser}Transcript segment:\n"""${text}"""`
     };
   }
   return {
-    system:`You produce a structured recap of the ENTIRE conversation, from the beginning to now, organized into coherent thematic sections in chronological order. ${langRule} `+
+    system:`You produce a structured recap of the ENTIRE conversation, from the beginning to now, organized into coherent thematic sections in chronological order. ${langRule} ${ctxSys}`+
       `The text is auto-generated speech-to-text and may have errors — infer intent. `+
       `Be concrete: capture key decisions, facts, action items and open questions. Avoid generic phrasing and topic labels. `+
       `Split the conversation into 2-6 coherent sections, each covering a distinct topic or phase. `+
       `Respond with ONLY a JSON object, no markdown or backticks. Schema: `+
       `{"recap": ${v.ovPhrase} overview of the whole conversation, `+
-      `"sections": [{"title": 3-6 word specific section heading, "summary": ${v.secPhrase} capturing the essence of this part, "points": [2-${v.pts} short, information-dense bullet points]}], `+
-      `"questions": [exactly 3 important forward-looking questions to ask next, ${v.qPhrase}, specific to the actual content]}`,
-    user:`Full conversation transcript:\n"""${text}"""`
+      `"sections": [{"title": 3-6 word specific section heading, "summary": ${v.secPhrase} capturing the essence of this part, "points": [2-${v.pts} short, information-dense bullet points]}]${qPart}}`,
+    user:`${ctxUser}Full conversation transcript:\n"""${text}"""`
   };
 }
 function parseJson(s){
@@ -510,7 +615,7 @@ function parseJson(s){
 /* ---------- i18n ---------- */
 const I18N={
   en:{tag:"Live conversation intelligence",empty:"Transcribe live, split into chapters, recap<br>and suggest smart questions as you go!",
-    reset:"Reset",export:"Txt",copy:"Copy",listening:"Listening…",ready:"Tap record to begin",stopped:"Stopped",
+    reset:"Reset",export:"Word",copy:"Copy",listening:"Listening…",ready:"Tap record to begin",stopped:"Stopped",
     chapter:"Chapter",questions:"Smart questions",transcript:"Show transcript",recapbtn:"Recap so far",
     ovTitle:"Recap so far",topq:"Top 3 questions",keypoints:"Key points",
     bysection:"Recap by section",fulltranscript:"Full transcript",speaker:"Speaker",
@@ -530,9 +635,17 @@ const I18N={
     setSpeech:"Spoken language",setSpeechHint:"(transcription)",setOut:"Recap & questions language",
     resetTitle:"Reset everything?",resetMsg:"This deletes the transcribed content, chapters and recap, and starts from scratch. This can't be undone.",
     resetConfirm:"Delete & start over",cancel:"Cancel",
-    actCopy:"Copy",actShare:"Forward",actTxt:".txt",recapCopied:"Recap copied",recapShared:"Shared",recapSaved:"Recap saved (.txt)"},
+    actCopy:"Copy",actShare:"Forward",actTxt:".txt",recapCopied:"Recap copied",recapShared:"Shared",recapSaved:"Recap saved (.txt)",
+    setVerbLbl:"Recap detail",setNq:"Smart questions",setNqHint:"(per recap/chapter)",
+    ctxTitle:"Conversation context",ctxSub:"Describe the goal of the conversation and attach documents to discuss. This is added to the start of the prompt to guide recaps and questions.",
+    ctxNote:"Text from .txt/.md/.csv/.json/.html files is read and included. Other formats (PDF, Word, PowerPoint) attach by name only — paste key text into the box above for best results.",
+    attach:"Attach files",ctxSaved:"Context saved",ctxOn:"● Context set",
+    histTitle:"Saved sessions",noSessions:"No saved sessions yet.",sessionSaved:"Session saved",sessionDeleted:"Session deleted",sessionLoaded:"Session loaded",confirmDelete:"Delete this session?",
+    open:"Open",del:"Delete",untitled:"Untitled session",
+    askTitle:"Ask the transcript",askSub:"Ask anything about what was said. Answers use the transcript and your context via Claude.",
+    askThinking:"Thinking…",askNoLLM:"Connect Claude (key 🔑) to ask questions about the transcript.",askEmptyTr:"Nothing transcribed yet."},
   it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
-    reset:"Reset",export:"Txt",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
+    reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
     ovTitle:"Riepilogo finora",topq:"3 domande chiave",keypoints:"Punti chiave",
     bysection:"Riepilogo per sezioni",fulltranscript:"Trascrizione completa",speaker:"Interlocutore",
@@ -552,7 +665,15 @@ const I18N={
     setSpeech:"Lingua parlata",setSpeechHint:"(trascrizione)",setOut:"Lingua di riepilogo e domande",
     resetTitle:"Azzerare tutto?",resetMsg:"Questo elimina il testo trascritto, i capitoli e il riepilogo, e riparte da zero. L'azione non è reversibile.",
     resetConfirm:"Elimina e ricomincia",cancel:"Annulla",
-    actCopy:"Copia",actShare:"Inoltra",actTxt:".txt",recapCopied:"Riepilogo copiato",recapShared:"Condiviso",recapSaved:"Riepilogo salvato (.txt)"}
+    actCopy:"Copia",actShare:"Inoltra",actTxt:".txt",recapCopied:"Riepilogo copiato",recapShared:"Condiviso",recapSaved:"Riepilogo salvato (.txt)",
+    setVerbLbl:"Dettaglio riepilogo",setNq:"Domande intelligenti",setNqHint:"(per riepilogo/capitolo)",
+    ctxTitle:"Contesto della conversazione",ctxSub:"Descrivi l'obiettivo della conversazione e allega documenti da discutere. Viene aggiunto all'inizio del prompt per guidare riepiloghi e domande.",
+    ctxNote:"Il testo dei file .txt/.md/.csv/.json/.html viene letto e incluso. Altri formati (PDF, Word, PowerPoint) sono allegati solo come nome — incolla il testo chiave nel riquadro sopra per risultati migliori.",
+    attach:"Allega file",ctxSaved:"Contesto salvato",ctxOn:"● Contesto impostato",
+    histTitle:"Sessioni salvate",noSessions:"Nessuna sessione salvata.",sessionSaved:"Sessione salvata",sessionDeleted:"Sessione eliminata",sessionLoaded:"Sessione caricata",confirmDelete:"Eliminare questa sessione?",
+    open:"Apri",del:"Elimina",untitled:"Sessione senza titolo",
+    askTitle:"Chiedi alla trascrizione",askSub:"Chiedi qualsiasi cosa su ciò che è stato detto. Le risposte usano la trascrizione e il tuo contesto tramite Claude.",
+    askThinking:"Sto pensando…",askNoLLM:"Connetti Claude (chiave 🔑) per fare domande sulla trascrizione.",askEmptyTr:"Niente trascritto ancora."}
 };
 let uiLang="en";
 function applyUI(){
@@ -573,8 +694,12 @@ function applyUI(){
   document.getElementById("t-setChap").innerHTML=d.setChap+` <span class="set-hint" id="t-setChapHint">${d.setChapHint}</span>`;
   document.getElementById("t-setSpeech").innerHTML=d.setSpeech+` <span class="set-hint">${d.setSpeechHint}</span>`;
   set("t-setOut",d.setOut);
-  set("t-setVerb",d.setVerb);
+  set("t-setVerb",d.setVerbLbl);
+  document.getElementById("t-setNq").innerHTML=d.setNq+` <span class="set-hint">${d.setNqHint}</span>`;
   set("t-mFast",d.mFast);set("t-mFastS",d.mFastS);set("t-mBal",d.mBal);set("t-mBalS",d.mBalS);set("t-mAdv",d.mAdv);set("t-mAdvS",d.mAdvS);
+  // context / history / ask panels
+  set("t-ctxTitle",d.ctxTitle);set("t-ctxSub",d.ctxSub);set("t-ctxNote",d.ctxNote);
+  set("t-histTitle",d.histTitle);set("t-askTitle",d.askTitle);set("t-askSub",d.askSub);
   document.querySelectorAll("[data-t]").forEach(b=>{b.textContent=d[b.dataset.t]||b.textContent;});
   updateKeyUI();
 }
@@ -671,8 +796,9 @@ const Q_TPL={
     k=>`Abbiamo l'allineamento degli stakeholder su ${k}?`]
 };
 function makeQuestions(text,srcLang,tplLang,count){
+  const want=count==null?3:count;
+  if(want<=0)return [];
   const k=keywords(text,srcLang,6),tpl=Q_TPL[tplLang]||Q_TPL.en,idx=[0,2,3,5,6,1],picks=[];
-  const want=count||3;
   if(!k.length)return [tpl[0]("this"),tpl[2]("this")].slice(0,want);
   for(let i=0;i<want;i++){picks.push(tpl[idx[i%idx.length]](k[i%k.length]));}
   return picks;
@@ -681,8 +807,8 @@ function makeQuestions(text,srcLang,tplLang,count){
 async function analyzeChapter(text){
   const out=settings.out, src=settings.speech;   // out = recap/questions language; src = transcript language
   if(LLM.enabled){try{const r=await LLM.call(text,out,"chapter");
-    if(r&&r.title&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang:src,text,_src:"llm"};}catch(e){}}
-  return{title:makeTitle(text,src),recap:makeRecap(text,src,verb().recapLen),questions:makeQuestions(text,src,out,3),lang:src,text};
+    if(r&&r.title&&r.recap)return{...r,questions:(Array.isArray(r.questions)?r.questions:[]).slice(0,settings.nq),lang:src,text,_src:"llm"};}catch(e){}}
+  return{title:makeTitle(text,src),recap:makeRecap(text,src,verb().recapLen),questions:makeQuestions(text,src,out,settings.nq),lang:src,text};
 }
 function makeBullets(text,lang){
   // Build an extensive, ordered set of bullet points spanning the whole transcript.
@@ -733,8 +859,8 @@ function makeSections(lang){
 async function analyzeOverview(text){
   const out=settings.out, src=settings.speech;
   if(LLM.enabled){try{const r=await LLM.call(text,out,"overview");
-    if(r&&r.recap&&Array.isArray(r.questions)&&r.questions.length)return{...r,lang:src,_src:"llm"};}catch(e){}}
-  return{recap:makeRecap(text,src,verb().ovLen),sections:makeSections(src),questions:makeQuestions(text,src,out,3),lang:src};
+    if(r&&r.recap)return{...r,questions:(Array.isArray(r.questions)?r.questions:[]).slice(0,settings.nq),lang:src,_src:"llm"};}catch(e){}}
+  return{recap:makeRecap(text,src,verb().ovLen),sections:makeSections(src),questions:makeQuestions(text,src,out,settings.nq),lang:src};
 }
 
 /* ---------- Concept-based chapter splitting ----------
@@ -798,9 +924,9 @@ function renderChapter(ch,i){
   el.style.background=t.bg;el.style.borderColor=t.bd;el.style.setProperty("--secac",t.ac);
   const body=ch.pending
     ? `<div class="ov-think"><span class="sp"></span>${d.thinking}</div>`
-    : `<div class="recap">${esc(ch.recap)}</div>
-       <div class="qh">✦ ${d.questions}</div>
-       <div class="qs">${ch.questions.map(q=>`<div class="q"><span class="spark">✦</span><span>${esc(q)}</span></div>`).join("")}</div>`;
+    : `<div class="recap">${esc(ch.recap)}</div>`+
+      (settings.nq>0&&ch.questions&&ch.questions.length?`<div class="qh">✦ ${d.questions}</div>
+       <div class="qs">${ch.questions.slice(0,settings.nq).map(q=>`<div class="q"><span class="spark">✦</span><span>${esc(q)}</span></div>`).join("")}</div>`:"");
   el.innerHTML=`
     <div class="chap-hd">
       <div class="chap-num" style="background:${t.ac}">${i+1}</div>
@@ -873,8 +999,8 @@ async function buildOverview(){
     </div>
     <div class="ov-recap">${esc(a.recap)}</div>
     ${sectionsHtml}
-    <div class="qh" style="margin-bottom:9px">★ ${d.topq}</div>
-    ${a.questions.slice(0,3).map((q,n)=>`<div class="ov-q"><span class="n">${n+1}</span><span>${esc(q)}</span></div>`).join("")}`;
+    ${(settings.nq>0&&a.questions&&a.questions.length)?`<div class="qh" style="margin-bottom:9px">★ ${d.topq}</div>
+    ${a.questions.slice(0,settings.nq).map((q,n)=>`<div class="ov-q"><span class="n">${n+1}</span><span>${esc(q)}</span></div>`).join("")}`:""}`;
   overview.querySelectorAll(".ov-q").forEach(q=>q.addEventListener("click",()=>{navigator.clipboard?.writeText(q.textContent.replace(/^\d+/,"").trim());tt(d.qCopied);}));
   overview.querySelectorAll(".ov-act").forEach(b=>b.addEventListener("click",()=>recapAction(b.dataset.act)));
   overview.style.animation="none";void overview.offsetWidth;overview.style.animation="rise .5s cubic-bezier(.2,.8,.2,1) both";
@@ -1191,13 +1317,14 @@ $("#export").addEventListener("click",()=>{
   const colorsHex=["#1a4d8f","#0c2b5c","#1c7fc0","#777777"].concat(PALETTE.map(p=>p.word));
   const colorTbl=colorsHex.map(h=>{h=h.replace("#","");return `\\red${parseInt(h.slice(0,2),16)}\\green${parseInt(h.slice(2,4),16)}\\blue${parseInt(h.slice(4,6),16)};`;}).join("");
   const SPK=sp=>5+(((sp%6)+6)%6);   // RTF color index for a speaker (palette starts at index 5)
-  const H=(t,fs,ci)=>`{\\pard\\sb160\\sa60\\b\\fs${fs}\\cf${ci} ${E(t)}\\par}\n`;
-  const P=t=>`{\\pard\\sa80 ${E(t)}\\par}\n`;
-  const BUL=t=>`{\\pard\\fi-240\\li380\\sa40 \\u8226?\\tab ${E(t)}\\par}\n`;
+  const LS="\\sl276\\slmult1";        // 1.15× line spacing for readable body text
+  const H=(t,fs,ci)=>`{\\pard\\sb220\\sa80\\b\\fs${fs}\\cf${ci} ${E(t)}\\par}\n`;
+  const P=t=>`{\\pard${LS}\\sa100 ${E(t)}\\par}\n`;
+  const BUL=t=>`{\\pard${LS}\\fi-260\\li420\\sa50 \\u8226?\\tab ${E(t)}\\par}\n`;
 
-  let r=`{\\rtf1\\ansi\\ansicpg1252\\deff0\\fs23{\\fonttbl{\\f0\\fswiss\\fcharset0 Calibri;}}{\\colortbl;${colorTbl}}\n`;
-  r+=`{\\pard\\sa40\\b\\fs44\\cf1 ${E("Smart reporter — "+d.ovTitle)}\\par}\n`;
-  r+=`{\\pard\\sa200\\fs18\\cf4 ${E(dt+" · "+totalWords()+" "+d.words)}\\par}\n`;
+  let r=`{\\rtf1\\ansi\\ansicpg1252\\deff0\\paperw12240\\paperh15840\\margl1440\\margr1440\\margt1440\\margb1440\\fs23{\\fonttbl{\\f0\\fswiss\\fcharset0 Calibri;}}{\\colortbl;${colorTbl}}\n`;
+  r+=`{\\pard\\sa60\\b\\fs48\\cf1 ${E("Smart reporter — "+d.ovTitle)}\\par}\n`;
+  r+=`{\\pard\\sa240\\fs18\\cf4 ${E(dt+"  ·  "+totalWords()+" "+d.words)}\\par}\n`;
 
   if(ov && ov.recap){
     r+=H(d.ovTitle,28,2);
@@ -1213,9 +1340,9 @@ $("#export").addEventListener("click",()=>{
       r+=H(d.keypoints,23,3); ov.bullets.forEach(b=>r+=BUL(b));
     }
     if(Array.isArray(ov.questions)&&ov.questions.length){
-      r+=H(d.topq,23,3); ov.questions.slice(0,3).forEach((q,n)=>r+=P((n+1)+". "+q));
+      r+=H(d.topq,23,3); ov.questions.slice(0,settings.nq).forEach((q,n)=>r+=P((n+1)+". "+q));
     }
-    r+=`{\\pard\\sa160\\cf3 \\u8212?\\u8212?\\u8212?\\u8212?\\par}\n`;
+    r+=`{\\pard\\sa160\\cf3 \\u8212?\\u8212?\\u8212?\\u8212?\\u8212?\\u8212?\\par}\n`;
   }
   chapters.forEach((c,i)=>{
     r+=H((i+1)+". "+c.title+"  ("+(c.lang||"").toUpperCase()+" · "+c.words+" "+d.words+")",28,2);
@@ -1230,10 +1357,10 @@ $("#export").addEventListener("click",()=>{
   if(blocks.length){
     r+=H(d.fulltranscript,28,2);
     if(used.size>1){
-      r+=`{\\pard\\sa120 `+[...used].sort((a,b)=>a-b).map(sp=>`{\\b\\cf${SPK(sp)}\\u9679?  ${E(d.speaker+" "+(sp+1))}}`).join("    ")+`\\par}\n`;
+      r+=`{\\pard\\sa140 `+[...used].sort((a,b)=>a-b).map(sp=>`{\\b\\cf${SPK(sp)}\\u9679?  ${E(d.speaker+" "+(sp+1))}}`).join("    ")+`\\par}\n`;
     }
     blocks.forEach(segs=>{
-      r+=`{\\pard\\sa120 `+segs.map(s=>`{\\cf${SPK(s.speaker)} ${E(s.text)}}`).join(" ")+`\\par}\n`;
+      r+=`{\\pard${LS}\\sa140 `+segs.map(s=>`{\\cf${SPK(s.speaker)} ${E(s.text)}}`).join(" ")+`\\par}\n`;
     });
   }
   r+="}";
@@ -1273,7 +1400,7 @@ $("#keyClear").addEventListener("click",()=>{setApiKey("");keyInput.value="";upd
 /* ---------- Settings modal ---------- */
 const setModal=$("#setModal");
 function syncSeg(id,val){const el=$("#"+id);if(el)[...el.children].forEach(x=>x.classList.toggle("on",x.dataset.v===String(val)));}
-function syncSettings(){syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setChap",settings.chap);syncSeg("setSpeech",settings.speech);syncSeg("setOut",settings.out);}
+function syncSettings(){syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setNq",settings.nq);syncSeg("setChap",settings.chap);syncSeg("setSpeech",settings.speech);syncSeg("setOut",settings.out);}
 function openSet(){syncSettings();setModal.classList.add("show");}
 function closeSet(){setModal.classList.remove("show");}
 $("#setBtn").addEventListener("click",openSet);
@@ -1289,6 +1416,7 @@ function bindSeg(id,key,cast){
 }
 bindSeg("setModel","model");
 bindSeg("setVerb","verb");
+bindSeg("setNq","nq",v=>parseInt(v,10));
 bindSeg("setChap","chap",v=>parseInt(v,10));
 
 // Spoken language → drives speech recognition (restart if recording)
@@ -1306,8 +1434,141 @@ $("#setOut").addEventListener("click",e=>{
   tt(I18N[uiLang].saved);
 });
 
-loadSettings();
-applyUI();updateRecapBtn();updateKeyUI();syncSettings();
+/* ---------- Context panel ---------- */
+const ctxModal=$("#ctxModal");
+function fmtSize(n){ return n<1024?n+" B":n<1048576?(n/1024).toFixed(0)+" KB":(n/1048576).toFixed(1)+" MB"; }
+function renderCtxFiles(){
+  const wrap=$("#ctxFiles");
+  wrap.innerHTML=(context.files||[]).map((f,i)=>`<div class="ctx-file"><span class="nm">${esc(f.name)}</span><span class="sz">${f.text?esc(f.chars+" chars"):"name only"}</span><button class="rm" data-i="${i}" title="Remove">×</button></div>`).join("");
+  wrap.querySelectorAll(".rm").forEach(b=>b.addEventListener("click",()=>{context.files.splice(+b.dataset.i,1);renderCtxFiles();}));
+}
+function updateCtxBtn(){ $("#ctxBtn").classList.toggle("on",hasContext()); }
+function openCtx(){ $("#ctxObjective").value=context.objective||""; renderCtxFiles(); ctxModal.classList.add("show"); }
+function closeCtx(){ ctxModal.classList.remove("show"); }
+$("#ctxBtn").addEventListener("click",openCtx);
+$("#ctxClose").addEventListener("click",closeCtx);
+ctxModal.addEventListener("click",e=>{if(e.target===ctxModal)closeCtx();});
+$("#ctxAttach").addEventListener("click",()=>$("#ctxFileInput").click());
+$("#ctxFileInput").addEventListener("change",async e=>{
+  const TEXTY=/\.(txt|md|markdown|csv|tsv|json|log|html?|xml|rtf|srt|vtt)$/i;
+  for(const file of [...e.target.files]){
+    let text="";
+    if(TEXTY.test(file.name)||/^text\//.test(file.type)){
+      try{ text=(await file.text()).slice(0,20000); }catch(_){}
+    }
+    context.files.push({name:file.name, text, chars:text.length});
+  }
+  e.target.value=""; renderCtxFiles();
+});
+$("#ctxSave").addEventListener("click",()=>{
+  context.objective=$("#ctxObjective").value;
+  saveContext(); updateCtxBtn(); tt(I18N[uiLang].ctxSaved); closeCtx();
+});
+
+/* ---------- Saved sessions (history) ---------- */
+const SESS_STORE="cc_sessions";
+const histModal=$("#histModal");
+function loadSessions(){ try{ const a=JSON.parse(localStorage.getItem(SESS_STORE)); return Array.isArray(a)?a:[]; }catch(e){ return []; } }
+function persistSessions(a){ try{ localStorage.setItem(SESS_STORE,JSON.stringify(a)); }catch(e){} }
+function autoTitle(){ if(chapters[0]&&chapters[0].title&&!chapters[0].pending)return chapters[0].title; const w=allText().split(/\s+/).filter(Boolean).slice(0,6).join(" "); return w||I18N[uiLang].untitled; }
+function saveSession(title){
+  if(!chapters.length&&!curBuf.trim()){ tt(I18N[uiLang].noContent); return; }
+  const sessions=loadSessions();
+  sessions.unshift({
+    id:Date.now(), title:(title&&title.trim())||autoTitle(), date:new Date().toISOString(), words:totalWords(),
+    chapters:JSON.parse(JSON.stringify(chapters)), tail:JSON.parse(JSON.stringify(segments)), curBuf,
+    overview:lastOverview?JSON.parse(JSON.stringify(lastOverview)):null,
+    speakers:JSON.parse(JSON.stringify(speakers)),
+    context:JSON.parse(JSON.stringify(context)), out:settings.out, speech:settings.speech
+  });
+  persistSessions(sessions); renderSessions(); tt(I18N[uiLang].sessionSaved);
+}
+function deleteSession(id){
+  persistSessions(loadSessions().filter(s=>s.id!==id)); renderSessions(); tt(I18N[uiLang].sessionDeleted);
+}
+function openSession(id){
+  const s=loadSessions().find(x=>x.id===id); if(!s)return;
+  if(recording)stop();
+  chapters=s.chapters||[]; segments=s.tail||[]; curBuf=s.curBuf||""; lastOverview=s.overview||null;
+  speakers=s.speakers||[]; context=s.context||{objective:"",files:[]};
+  isFirstChapter=!chapters.length; currentSpeaker=0;
+  if(s.speech&&(s.speech==="en"||s.speech==="it"))saveSetting("speech",s.speech);
+  if(s.out&&(s.out==="en"||s.out==="it")){saveSetting("out",s.out);uiLang=s.out;}
+  applyUI(); refreshChapters();
+  if(chapters.length||curBuf.trim()){liveCard.style.display="block";renderLive();} else liveCard.style.display="none";
+  if(lastOverview){ renderOverviewFrom(lastOverview); } else overview.style.display="none";
+  updateCtxBtn(); updateRecapBtn(); syncSettings();
+  closeHist(); tt(I18N[uiLang].sessionLoaded);
+  stat.textContent=I18N[uiLang].stopped;
+}
+function renderSessions(){
+  const list=$("#histList"), sessions=loadSessions(), d=I18N[uiLang];
+  if(!sessions.length){ list.innerHTML=`<div class="hist-empty">${d.noSessions}</div>`; return; }
+  list.innerHTML=sessions.map(s=>{
+    const dt=new Date(s.date).toLocaleString(uiLang==="it"?"it-IT":"en-US",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+    return `<div class="hist-item" data-id="${s.id}"><div class="meta"><div class="ti">${esc(s.title)}</div><div class="sub">${esc(dt)} · ${s.words||0} ${esc(d.words)}</div></div>
+      <button class="open" data-act="open">${esc(d.open)}</button><button class="del" data-act="del">${esc(d.del)}</button></div>`;
+  }).join("");
+  list.querySelectorAll(".hist-item").forEach(it=>{
+    const id=+it.dataset.id;
+    it.querySelector('[data-act="open"]').addEventListener("click",()=>openSession(id));
+    it.querySelector('[data-act="del"]').addEventListener("click",()=>{ if(confirm(d.confirmDelete))deleteSession(id); });
+  });
+}
+function openHist(){ $("#histName").value=autoTitle(); renderSessions(); histModal.classList.add("show"); }
+function closeHist(){ histModal.classList.remove("show"); }
+$("#histBtn").addEventListener("click",openHist);
+$("#histClose").addEventListener("click",closeHist);
+histModal.addEventListener("click",e=>{if(e.target===histModal)closeHist();});
+$("#histSave").addEventListener("click",()=>saveSession($("#histName").value));
+$("#histName").addEventListener("keydown",e=>{if(e.key==="Enter")saveSession($("#histName").value);});
+
+/* Render an overview object into the panel (used when loading a saved session). */
+function renderOverviewFrom(a){
+  const d=I18N[uiLang];
+  const sections=Array.isArray(a.sections)?a.sections:[];
+  const sectionsHtml=sections.length
+    ? `<div class="qh" style="margin:4px 0 9px">▸ ${d.bysection}</div><div class="ov-sections">`+
+      sections.map((s,i)=>`<div class="ov-sec"><div class="ov-sec-hd"><span class="ov-sec-n">${i+1}</span>${esc(s.title||"")}</div>${s.summary?`<div class="ov-sec-sum">${esc(s.summary)}</div>`:""}${Array.isArray(s.points)&&s.points.length?`<ul class="ov-bul">${s.points.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:""}</div>`).join("")+`</div>`
+    : "";
+  const icCopy='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>';
+  const icShare='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>';
+  const icTxt='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M9 13h6M9 17h4"/></svg>';
+  overview.style.display="block";
+  overview.innerHTML=`
+    <div class="ov-hd"><div class="ic">✨</div><div class="ti">${d.ovTitle}</div><div class="tm">${a._src==="llm"?"AI":"·"} · ${totalWords()} ${d.words}</div></div>
+    <div class="ov-actions"><button class="ov-act" data-act="copy">${icCopy}${d.actCopy}</button><button class="ov-act" data-act="share">${icShare}${d.actShare}</button><button class="ov-act" data-act="txt">${icTxt}${d.actTxt}</button></div>
+    <div class="ov-recap">${esc(a.recap)}</div>
+    ${sectionsHtml}
+    ${(settings.nq>0&&a.questions&&a.questions.length)?`<div class="qh" style="margin-bottom:9px">★ ${d.topq}</div>${a.questions.slice(0,settings.nq).map((q,n)=>`<div class="ov-q"><span class="n">${n+1}</span><span>${esc(q)}</span></div>`).join("")}`:""}`;
+  overview.querySelectorAll(".ov-q").forEach(q=>q.addEventListener("click",()=>{navigator.clipboard?.writeText(q.textContent.replace(/^\d+/,"").trim());tt(d.qCopied);}));
+  overview.querySelectorAll(".ov-act").forEach(b=>b.addEventListener("click",()=>recapAction(b.dataset.act)));
+}
+
+/* ---------- Ask the transcript ---------- */
+const askModal=$("#askModal");
+function openAsk(){ askModal.classList.add("show"); setTimeout(()=>$("#askInput").focus(),50); }
+function closeAsk(){ askModal.classList.remove("show"); }
+$("#askBtn").addEventListener("click",openAsk);
+$("#askClose").addEventListener("click",closeAsk);
+askModal.addEventListener("click",e=>{if(e.target===askModal)closeAsk();});
+async function sendAsk(){
+  const d=I18N[uiLang], q=$("#askInput").value.trim(); if(!q)return;
+  if(!fullTranscript().trim()){tt(d.askEmptyTr);return;}
+  if(!LLM.enabled){tt(d.askNoLLM);return;}
+  const log=$("#askLog");
+  log.insertAdjacentHTML("beforeend",`<div class="ask-q">${esc(q)}</div><div class="ask-a think">${d.askThinking}</div>`);
+  $("#askInput").value=""; log.scrollTop=log.scrollHeight;
+  const aEl=log.lastElementChild;
+  try{ const ans=await LLM.ask(q); aEl.classList.remove("think"); aEl.textContent=ans||"…"; }
+  catch(err){ aEl.classList.remove("think"); aEl.textContent="⚠️ "+(err&&err.message||"error"); }
+  log.scrollTop=log.scrollHeight;
+}
+$("#askSend").addEventListener("click",sendAsk);
+$("#askInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendAsk();});
+
+loadSettings();loadContext();
+applyUI();updateRecapBtn();updateKeyUI();syncSettings();updateCtxBtn();
 </script>
 </body>
 </html>
