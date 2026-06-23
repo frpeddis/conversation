@@ -199,26 +199,18 @@
   .credits{position:absolute;left:0;right:0;bottom:calc(6px + env(safe-area-inset-bottom));text-align:center;
     font-size:9.5px;letter-spacing:.6px;font-weight:700;color:var(--txt);opacity:.5;pointer-events:none;z-index:16}
 
-  /* Recording level tiers — quiet → marginal → good → ideal-for-transcription.
-     Each tier carries a color + a soft glow; .rec, the ring meter, the wave bars
-     and the floating label all read off the same --lvl-* variables so the whole
-     control shifts together as input quality changes. */
+  /* Recording level tiers — marginal → good → ideal-for-transcription.
+     Each tier carries a color + a soft glow; .rec, the ring meter and the
+     wave bars all read off the same --lvl-* variables so the whole control
+     shifts together as input quality changes. No text label — the color
+     alone (orange → yellow → green) tells the story. */
   :root{
-    --lvl-q1:#ff4d6d; --lvl-q1b:#ff7a8f;   /* too quiet */
-    --lvl-q2:#ff9f43; --lvl-q2b:#ffbb70;   /* improving */
-    --lvl-q3:#ffd166; --lvl-q3b:#ffe39a;   /* good */
-    --lvl-q4:#3ddc97; --lvl-q4b:#7af0bd;   /* perfect / transcription-ready */
+    --lvl-q1:#ff9f43; --lvl-q1b:#ffbb70;   /* marginal */
+    --lvl-q2:#ffd166; --lvl-q2b:#ffe39a;   /* good */
+    --lvl-q3:#3ddc97; --lvl-q3b:#7af0bd;   /* perfect / transcription-ready */
     --lvl-c:var(--lvl-q1); --lvl-cb:var(--lvl-q1b);  /* current tier, set by JS */
   }
   .rec-wrap{position:relative;display:grid;place-items:center}
-  .lvl-label{position:absolute;bottom:calc(100% + 11px);left:50%;transform:translateX(-50%) translateY(4px);
-    display:flex;align-items:center;gap:6px;padding:5px 11px 5px 8px;border-radius:20px;white-space:nowrap;
-    background:rgba(8,16,34,.82);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px);
-    font-size:10.5px;font-weight:800;letter-spacing:.3px;color:var(--txt);
-    opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:5}
-  .lvl-label.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .lvl-label .dotq{width:7px;height:7px;border-radius:50%;flex:none;background:var(--lvl-c);
-    box-shadow:0 0 8px var(--lvl-c);transition:background .25s,box-shadow .25s}
 
   .rec{position:relative;width:80px;height:80px;border-radius:50%;border:0;cursor:pointer;
     background:linear-gradient(135deg,var(--hot),#ff7a5c);color:#fff;display:grid;place-items:center;
@@ -300,6 +292,16 @@
   .mstatus{font-size:11.5px;font-weight:700;margin-bottom:11px}
   .mstatus.ok{color:var(--ok)} .mstatus.off{color:var(--mut)}
   .mlink{color:var(--accent2);text-decoration:none}
+
+  .keyrowbtn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card3);border:1px solid var(--line);border-radius:13px;padding:13px 14px;
+    color:var(--txt);font-family:inherit;font-weight:700;font-size:13.5px;cursor:pointer;transition:.2s}
+  .keyrowbtn:active{transform:scale(.98)}
+  .keyrowbtn span:first-child{flex:none}
+  .mstatus-mini{font-size:10.5px;font-weight:800;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,.06);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+  .mstatus-mini.ok{color:var(--ok);background:rgba(61,220,151,.14)}
+  .mstatus-mini.off{color:var(--mut)}
 
   /* Settings — segmented controls */
   .set-group{margin-bottom:15px}
@@ -402,7 +404,6 @@
       <small id="t-copy">Copy</small>
     </div>
     <div class="rec-wrap">
-      <div class="lvl-label" id="lvlLabel"><span class="dotq" id="lvlDot"></span><span id="lvlText"></span></div>
       <button class="rec" id="rec" aria-label="Record">
         <svg class="lvl-ring" id="lvlRing" viewBox="0 0 96 96" aria-hidden="true">
           <circle class="lvl-track" cx="48" cy="48" r="43"/>
@@ -426,7 +427,11 @@
 
 <div class="modal" id="keyModal">
   <div class="sheet">
-    <h3>🔑 <span id="t-keyTitle">Connect Claude</span></h3>
+    <h3>🔑 <span id="t-keyTitle">Connect an AI provider</span></h3>
+    <div class="seg" id="keyProviderTabs" style="margin-bottom:14px">
+      <button data-v="anthropic"><b>Claude</b><span>Anthropic</span></button>
+      <button data-v="glm"><b>GLM</b><span>Zhipu AI</span></button>
+    </div>
     <div class="sub" id="t-keySub">Paste your Anthropic API key to generate recaps and smart questions with Claude. It is stored only in this browser and sent only to Anthropic.</div>
     <div class="mstatus off" id="keyStatus"></div>
     <div class="keyrow">
@@ -499,14 +504,27 @@
       </div>
     </div>
 
-    <div class="set-section"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></span><span class="tt" id="t-secAI">Claude model</span></div>
+    <div class="set-section"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></span><span class="tt" id="t-secAI">AI provider</span></div>
     <div class="set-group">
-      <div class="set-label" id="t-setModel">Claude model <span class="set-hint" id="t-setModelHint">(used when an API key is active)</span></div>
-      <div class="seg seg3" id="setModel">
-        <button data-v="haiku"><b id="t-mFast">Fast</b><span id="t-mFastS">Haiku · cheapest</span></button>
-        <button data-v="sonnet"><b id="t-mBal">Balanced</b><span id="t-mBalS">Sonnet</span></button>
-        <button data-v="opus"><b id="t-mAdv">Advanced</b><span id="t-mAdvS">Opus · priciest</span></button>
+      <div class="set-label" id="t-setProvider">Provider</div>
+      <div class="seg" id="setProvider">
+        <button data-v="anthropic"><b>Claude</b><span id="t-pAnthropicS">Anthropic</span></button>
+        <button data-v="glm"><b>GLM</b><span id="t-pGlmS">Zhipu AI</span></button>
       </div>
+    </div>
+    <div class="set-group">
+      <div class="set-label" id="t-setModel">Model tier <span class="set-hint" id="t-setModelHint">(used when an API key is active)</span></div>
+      <div class="seg seg3" id="setModel">
+        <button data-v="fast"><b id="t-mFast">Fast</b><span id="t-mFastS">Haiku · cheapest</span></button>
+        <button data-v="balanced"><b id="t-mBal">Balanced</b><span id="t-mBalS">Sonnet</span></button>
+        <button data-v="advanced"><b id="t-mAdv">Advanced</b><span id="t-mAdvS">Opus · priciest</span></button>
+      </div>
+    </div>
+    <div class="set-group">
+      <button class="keyrowbtn" id="setKeyBtn">
+        <span id="t-setKeyLbl">Manage API key</span>
+        <span class="mstatus-mini" id="setKeyStatus"></span>
+      </button>
     </div>
     <div class="mbtns"><button class="mbtn ghostb" id="setClose" data-t="close">Close</button></div>
   </div>
@@ -584,25 +602,37 @@
    and clear it when done. For multi-user or production use, proxy the
    call through your own backend instead of shipping the key to the browser.
    ============================================================ */
-const KEY_STORE="cc_anthropic_key";
-function getApiKey(){ try{ return localStorage.getItem(KEY_STORE)||""; }catch(e){ return ""; } }
-function setApiKey(k){ try{ k?localStorage.setItem(KEY_STORE,k):localStorage.removeItem(KEY_STORE); }catch(e){} }
+const KEY_STORE={anthropic:"cc_anthropic_key", glm:"cc_glm_key"};
+function getApiKey(provider){ try{ return localStorage.getItem(KEY_STORE[provider||settings.provider])||""; }catch(e){ return ""; } }
+function setApiKey(k,provider){ try{ const s=KEY_STORE[provider||settings.provider]; k?localStorage.setItem(s,k):localStorage.removeItem(s); }catch(e){} }
+function keyLooksValid(k,provider){ return (provider||settings.provider)==="anthropic" ? /^sk-/.test(k) : k.trim().length>=8; }
 
 /* ---------- User settings (model / recap detail / #questions / chapter length / languages) ---------- */
-const MODELS={ haiku:"claude-haiku-4-5-20251001", sonnet:"claude-sonnet-4-6", opus:"claude-opus-4-8" };
+/* Two providers, each with three cost/quality tiers. The tier concept (Fast /
+   Balanced / Advanced) is shared in the UI; only the underlying model id and
+   the API key differ by provider. */
+const MODELS={
+  anthropic:{ fast:"claude-haiku-4-5-20251001", balanced:"claude-sonnet-4-6", advanced:"claude-opus-4-8" },
+  glm:      { fast:"glm-4.5-air",               balanced:"glm-4.6",          advanced:"glm-5.1" }
+};
+const PROVIDERS=["anthropic","glm"];
+const TIERS=["fast","balanced","advanced"];
 /* Recap-detail presets drive both the Claude prompts and the on-device fallback. */
 const VERB={
   short: {recapPhrase:"1 short sentence", ovPhrase:"1 short sentence", secPhrase:"a brief phrase", qPhrase:"short and direct (max ~10 words each)", recapLen:90,  ovLen:110, secLen:90,  sents:1, pts:3},
   medium:{recapPhrase:"1-2 sentences",    ovPhrase:"2 sentences",      secPhrase:"1 concise sentence", qPhrase:"concise",                        recapLen:150, ovLen:170, secLen:130, sents:2, pts:4},
   long:  {recapPhrase:"3-4 sentences",    ovPhrase:"4-5 sentences",    secPhrase:"2-3 sentences",      qPhrase:"detailed and probing",            recapLen:320, ovLen:360, secLen:270, sents:4, pts:5}
 };
-const SET_STORE={model:"cc_model",verb:"cc_verb",chap:"cc_chaplen",speech:"cc_speech",out:"cc_out",nq:"cc_nq",split:"cc_split"};
+const SET_STORE={model:"cc_model",provider:"cc_provider",verb:"cc_verb",chap:"cc_chaplen",speech:"cc_speech",out:"cc_out",nq:"cc_nq",split:"cc_split"};
 const CHAP_OPTS=[100,200,300,400,500,1000];
 const NQ_OPTS=[0,1,2,3];
-let settings={model:"haiku",verb:"short",chap:100,speech:"en",out:"en",nq:3,split:true};
+const OLD_MODEL_MAP={haiku:"fast",sonnet:"balanced",opus:"advanced"};  // migrate pre-multi-provider values
+let settings={provider:"anthropic",model:"fast",verb:"short",chap:100,speech:"en",out:"en",nq:3,split:true};
 function loadSettings(){
   try{
-    const m=localStorage.getItem(SET_STORE.model); if(m&&MODELS[m])settings.model=m;
+    const p=localStorage.getItem(SET_STORE.provider); if(PROVIDERS.includes(p))settings.provider=p;
+    let m=localStorage.getItem(SET_STORE.model); if(m&&OLD_MODEL_MAP[m])m=OLD_MODEL_MAP[m];
+    if(m&&TIERS.includes(m))settings.model=m;
     const v=localStorage.getItem(SET_STORE.verb); if(v&&VERB[v])settings.verb=v;
     const c=parseInt(localStorage.getItem(SET_STORE.chap),10); if(CHAP_OPTS.includes(c))settings.chap=c;
     const s=localStorage.getItem(SET_STORE.speech); if(s==="en"||s==="it")settings.speech=s;
@@ -632,14 +662,24 @@ function contextBlock(){
 }
 
 const LLM = {
-  get model(){ return MODELS[settings.model]||MODELS.sonnet; },
-  get hasKey(){ return /^sk-/.test(getApiKey()); },
-  get hasArtifact(){ return typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
+  get model(){ return (MODELS[settings.provider]||MODELS.anthropic)[settings.model]||MODELS.anthropic.balanced; },
+  get hasKey(){ return keyLooksValid(getApiKey(), settings.provider); },
+  get hasArtifact(){ return settings.provider==="anthropic" && typeof window!=="undefined" && window.claude && typeof window.claude.complete==="function"; },
   get enabled(){ return this.hasKey || this.hasArtifact; },
 
   // Low-level: send system+user, return raw text (or null if no LLM available).
   async _raw(system, user, maxTokens){
     if(this.hasKey){
+      if(settings.provider==="glm"){
+        const resp=await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions",{
+          method:"POST",
+          headers:{"content-type":"application/json","Authorization":"Bearer "+getApiKey()},
+          body:JSON.stringify({model:this.model,max_tokens:maxTokens||800,messages:[{role:"system",content:system},{role:"user",content:user}]})
+        });
+        if(!resp.ok)throw new Error("API "+resp.status+" "+(await resp.text().catch(()=>"")));
+        const data=await resp.json();
+        return ((data.choices||[])[0]||{}).message?.content||"";
+      }
       const resp=await fetch("https://api.anthropic.com/v1/messages",{
         method:"POST",
         headers:{"content-type":"application/json","x-api-key":getApiKey(),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
@@ -719,19 +759,24 @@ const I18N={
     autoStart:"Auto-detecting language…",words:"words",qCopied:"Question copied",noContent:"Keep talking — not enough yet for a recap.",
     updated:"Recap updated",thinking:"Analyzing the full conversation…",
     transcriptCopied:"Transcript copied to clipboard",nothingYet:"Nothing to copy yet",
-    keyTitle:"Connect Claude",keySub:"Paste your Anthropic API key to generate recaps and smart questions with Claude. It is stored only in this browser and sent only to Anthropic.",
-    keyNote:"<b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
-    save:"Save",clear:"Remove",close:"Close",connected:"● Connected — recaps use Claude",artifactOn:"● Connected via Claude app",notConnected:"○ Not connected — using on-device fallback",
-    keySaved:"Claude connected",keyRemoved:"Key removed",keyBad:"That doesn't look like an Anthropic key (sk-…)",
-    setTitle:"Settings",setModel:"Claude model",setModelHint:"(used when an API key is active)",
+    keyTitle:"Connect an AI provider",
+    keySubAnthropic:"Paste your Anthropic API key to generate recaps and smart questions with Claude. It is stored only in this browser and sent only to Anthropic.",
+    keySubGlm:"Paste your GLM (Zhipu AI) API key to generate recaps and smart questions with GLM. It is stored only in this browser and sent only to Zhipu AI.",
+    keyNoteAnthropic:"<b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class='mlink' href='{link}' target='_blank' rel='noopener'>{linkLabel}</a>.",
+    keyNoteGlm:"<b>Keep it private:</b> a key stored in a browser can be read by anyone using this device. Use a key limited to this purpose and remove it when finished. Get a key at <a class='mlink' href='{link}' target='_blank' rel='noopener'>{linkLabel}</a>.",
+    save:"Save",clear:"Remove",close:"Close",connected:"● Connected",artifactOn:"● Connected via Claude app",notConnected:"○ Not connected — using on-device fallback",
+    keyMiniOn:"● Connected",keyMiniOff:"○ Not connected",
+    keySaved:"Key saved",keyRemoved:"Key removed",keyBad:"That doesn't look like a valid key for this provider",
+    setTitle:"Settings",setProvider:"Provider",setModel:"Model tier",setModelHint:"(used when an API key is active)",setKeyLbl:"Manage API key",
     mFast:"Fast",mFastS:"Haiku · cheapest",mBal:"Balanced",mBalS:"Sonnet",mAdv:"Advanced",mAdvS:"Opus · priciest",
+    mFastSGlm:"GLM-4.5-Air · cheapest",mBalSGlm:"GLM-4.6",mAdvSGlm:"GLM-5.1 · priciest",
     setVerb:"Recap & questions detail",vShort:"Short",vMed:"Medium",vLong:"Long",
     setChap:"Typical chapter length",setChapHint:"(words)",saved:"Settings saved",
     setSpeech:"Spoken language",setSpeechHint:"(transcription)",setOut:"Recap & questions language",
     setSplit:"Organize into chapters",spOn:"On",spOnS:"Auto-split & recap",spOff:"Off",spOffS:"One continuous stream",
     jumpToTranscript:"Jump to transcript",jumpToRecap:"Jump to recap",
     featChap:"Chapters",featAI:"AI recaps",featAsk:"Ask anything",
-    secLang:"Languages",secChap:"Chapters & recap",secAI:"Claude model",
+    secLang:"Languages",secChap:"Chapters & recap",secAI:"AI provider",
     resetTitle:"Reset everything?",resetMsg:"This deletes the transcribed content, chapters and recap, and starts from scratch. This can't be undone.",
     resetConfirm:"Delete & start over",cancel:"Cancel",
     actCopy:"Copy",actShare:"Forward",actTxt:".txt",recapCopied:"Recap copied",recapShared:"Shared",recapSaved:"Recap saved (.txt)",
@@ -743,7 +788,8 @@ const I18N={
     open:"Open",del:"Delete",untitled:"Untitled session",
     askTitle:"Ask the transcript",askSub:"Ask anything about what was said. Answers use the transcript and your context via Claude.",
     askThinking:"Thinking…",askNoLLM:"Connect Claude (key 🔑) to ask questions.",askEmptyTr:"Nothing transcribed yet.",askNothing:"Add context or transcribe something first.",
-    lvlQuiet:"Too quiet",lvlLow:"Getting better",lvlGood:"Good signal",lvlPerfect:"Perfect for transcription"},
+  },
+
   it:{tag:"Intelligenza per conversazioni dal vivo",empty:"Trascrivi dal vivo, dividi in capitoli, riepiloga<br>e proponi domande intelligenti mentre parli!",
     reset:"Reset",export:"Word",copy:"Copia",listening:"In ascolto…",ready:"Tocca per registrare",stopped:"Fermato",
     chapter:"Capitolo",questions:"Domande intelligenti",transcript:"Mostra trascrizione",recapbtn:"Riepilogo finora",
@@ -754,19 +800,24 @@ const I18N={
     autoStart:"Rilevamento lingua…",words:"parole",qCopied:"Domanda copiata",noContent:"Continua a parlare — non c'è ancora abbastanza per un riepilogo.",
     updated:"Riepilogo aggiornato",thinking:"Analisi dell'intera conversazione…",
     transcriptCopied:"Trascrizione copiata",nothingYet:"Niente da copiare ancora",
-    keyTitle:"Connetti Claude",keySub:"Incolla la tua chiave API Anthropic per generare riepiloghi e domande intelligenti con Claude. È salvata solo in questo browser e inviata solo ad Anthropic.",
-    keyNote:"<b>Tienila privata:</b> una chiave salvata nel browser può essere letta da chi usa questo dispositivo. Usa una chiave limitata a questo scopo e rimuovila al termine. Ottieni una chiave su <a class='mlink' href='https://console.anthropic.com/settings/keys' target='_blank' rel='noopener'>console.anthropic.com</a>.",
-    save:"Salva",clear:"Rimuovi",close:"Chiudi",connected:"● Connesso — i riepiloghi usano Claude",artifactOn:"● Connesso tramite l'app Claude",notConnected:"○ Non connesso — uso il motore locale",
-    keySaved:"Claude connesso",keyRemoved:"Chiave rimossa",keyBad:"Non sembra una chiave Anthropic (sk-…)",
-    setTitle:"Impostazioni",setModel:"Modello Claude",setModelHint:"(usato quando la chiave API è attiva)",
+    keyTitle:"Connetti un provider AI",
+    keySubAnthropic:"Incolla la tua chiave API Anthropic per generare riepiloghi e domande intelligenti con Claude. È salvata solo in questo browser e inviata solo ad Anthropic.",
+    keySubGlm:"Incolla la tua chiave API GLM (Zhipu AI) per generare riepiloghi e domande intelligenti con GLM. È salvata solo in questo browser e inviata solo a Zhipu AI.",
+    keyNoteAnthropic:"<b>Tienila privata:</b> una chiave salvata nel browser può essere letta da chi usa questo dispositivo. Usa una chiave limitata a questo scopo e rimuovila al termine. Ottieni una chiave su <a class='mlink' href='{link}' target='_blank' rel='noopener'>{linkLabel}</a>.",
+    keyNoteGlm:"<b>Tienila privata:</b> una chiave salvata nel browser può essere letta da chi usa questo dispositivo. Usa una chiave limitata a questo scopo e rimuovila al termine. Ottieni una chiave su <a class='mlink' href='{link}' target='_blank' rel='noopener'>{linkLabel}</a>.",
+    save:"Salva",clear:"Rimuovi",close:"Chiudi",connected:"● Connesso",artifactOn:"● Connesso tramite l'app Claude",notConnected:"○ Non connesso — uso il motore locale",
+    keyMiniOn:"● Connesso",keyMiniOff:"○ Non connesso",
+    keySaved:"Chiave salvata",keyRemoved:"Chiave rimossa",keyBad:"Non sembra una chiave valida per questo provider",
+    setTitle:"Impostazioni",setProvider:"Provider",setModel:"Livello modello",setModelHint:"(usato quando la chiave API è attiva)",setKeyLbl:"Gestisci chiave API",
     mFast:"Veloce",mFastS:"Haiku · economico",mBal:"Bilanciato",mBalS:"Sonnet",mAdv:"Avanzato",mAdvS:"Opus · costoso",
+    mFastSGlm:"GLM-4.5-Air · economico",mBalSGlm:"GLM-4.6",mAdvSGlm:"GLM-5.1 · costoso",
     setVerb:"Dettaglio riepilogo e domande",vShort:"Breve",vMed:"Medio",vLong:"Lungo",
     setChap:"Lunghezza tipica capitolo",setChapHint:"(parole)",saved:"Impostazioni salvate",
     setSpeech:"Lingua parlata",setSpeechHint:"(trascrizione)",setOut:"Lingua di riepilogo e domande",
     setSplit:"Organizza in capitoli",spOn:"Sì",spOnS:"Divide e riepiloga",spOff:"No",spOffS:"Flusso unico continuo",
     jumpToTranscript:"Vai alla trascrizione",jumpToRecap:"Vai al riepilogo",
     featChap:"Capitoli",featAI:"Riepiloghi AI",featAsk:"Chiedi qualsiasi cosa",
-    secLang:"Lingue",secChap:"Capitoli e riepilogo",secAI:"Modello Claude",
+    secLang:"Lingue",secChap:"Capitoli e riepilogo",secAI:"Provider AI",
     resetTitle:"Azzerare tutto?",resetMsg:"Questo elimina il testo trascritto, i capitoli e il riepilogo, e riparte da zero. L'azione non è reversibile.",
     resetConfirm:"Elimina e ricomincia",cancel:"Annulla",
     actCopy:"Copia",actShare:"Inoltra",actTxt:".txt",recapCopied:"Riepilogo copiato",recapShared:"Condiviso",recapSaved:"Riepilogo salvato (.txt)",
@@ -778,12 +829,12 @@ const I18N={
     open:"Apri",del:"Elimina",untitled:"Sessione senza titolo",
     askTitle:"Chiedi alla trascrizione",askSub:"Chiedi qualsiasi cosa su ciò che è stato detto. Le risposte usano la trascrizione e il tuo contesto tramite Claude.",
     askThinking:"Sto pensando…",askNoLLM:"Connetti Claude (chiave 🔑) per fare domande.",askEmptyTr:"Niente trascritto ancora.",askNothing:"Aggiungi un contesto o trascrivi qualcosa prima.",
-    lvlQuiet:"Troppo piano",lvlLow:"Sta migliorando",lvlGood:"Segnale buono",lvlPerfect:"Perfetto per la trascrizione"}
+  }
 };
 let uiLang="en";
+function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
 function applyUI(){
   const d=I18N[uiLang];
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
   document.getElementById("t-tag").innerHTML=d.tag;
   document.getElementById("t-empty").innerHTML=d.empty;
   set("t-featChap",d.featChap);set("t-featAI",d.featAI);set("t-featAsk",d.featAsk);
@@ -791,9 +842,6 @@ function applyUI(){
   document.getElementById("t-export").textContent=d.export;
   document.getElementById("t-recapbtn").textContent=d.recapbtn;
   document.getElementById("t-keyTitle").textContent=d.keyTitle;
-  document.getElementById("t-keySub").textContent=d.keySub;
-  document.getElementById("t-keyNote").innerHTML=d.keyNote;
-  if(recBtn.dataset.tier)lvlText.textContent=d[LVL_TIERS.find(t=>t.css===recBtn.dataset.tier).key];
   // settings labels
   set("t-resetTitle",d.resetTitle);set("t-resetMsg",d.resetMsg);
   set("t-setTitle",d.setTitle);set("t-setModelHint",d.setModelHint);set("t-setModel",d.setModel);
@@ -803,6 +851,8 @@ function applyUI(){
   set("t-setOut",d.setOut);
   set("t-setSplit",d.setSplit);set("t-spOn",d.spOn);set("t-spOnS",d.spOnS);set("t-spOff",d.spOff);set("t-spOffS",d.spOffS);
   set("t-secLang",d.secLang);set("t-secChap",d.secChap);set("t-secAI",d.secAI);
+  set("t-setProvider",d.setProvider);set("t-setKeyLbl",d.setKeyLbl);
+  applyModelTierLabels();
   set("t-setVerb",d.setVerbLbl);
   document.getElementById("t-setNq").innerHTML=d.setNq+` <span class="set-hint">${d.setNqHint}</span>`;
   set("t-mFast",d.mFast);set("t-mFastS",d.mFastS);set("t-mBal",d.mBal);set("t-mBalS",d.mBalS);set("t-mAdv",d.mAdv);set("t-mAdvS",d.mAdvS);
@@ -819,18 +869,17 @@ let interim="", chapters=[], curBuf="", fullText="", lastTs=0;
 let audioCtx=null, analyser=null, rafId=null, micStream=null, micReady=false;
 let smoothLevel=0;          // EMA-smoothed RMS, drives the ring/colors so they don't flicker
 /* Volume tiers, calibrated against what browser speech recognition can actually
-   use: below ~3% RMS the recognizer mostly drops words; ~3–8% is marginal;
-   ~8–18% is the reliable working range; above that it's solidly clean. A soft
-   ceiling above ~45% nudges back toward "good" rather than "perfect" since
-   clipping hurts transcription as much as silence does. */
+   use: below ~8% RMS is marginal (orange); ~8–18% is the reliable working
+   range (yellow); above that it's solidly clean (green). A soft ceiling
+   above ~50% nudges back toward "good" rather than "perfect" since clipping
+   hurts transcription as much as a weak signal does. */
 const LVL_TIERS=[
-  {max:.03, css:"q1", key:"lvlQuiet",  c:"--lvl-q1", cb:"--lvl-q1b"},
-  {max:.08, css:"q2", key:"lvlLow",    c:"--lvl-q2", cb:"--lvl-q2b"},
-  {max:.18, css:"q3", key:"lvlGood",   c:"--lvl-q3", cb:"--lvl-q3b"},
-  {max:1,   css:"q4", key:"lvlPerfect",c:"--lvl-q4", cb:"--lvl-q4b"}
+  {max:.08, css:"q1", c:"--lvl-q1", cb:"--lvl-q1b"},
+  {max:.18, css:"q2", c:"--lvl-q2", cb:"--lvl-q2b"},
+  {max:1,   css:"q3", c:"--lvl-q3", cb:"--lvl-q3b"}
 ];
 function levelTier(rms){
-  if(rms>.5)return LVL_TIERS[2];                 // clipping risk → back off from "perfect"
+  if(rms>.5)return LVL_TIERS[1];                 // clipping risk → back off from "perfect"
   for(const t of LVL_TIERS)if(rms<=t.max)return t;
   return LVL_TIERS[LVL_TIERS.length-1];
 }
@@ -868,7 +917,7 @@ const $=s=>document.querySelector(s);
 const scroll=$("#scroll"),chaptersEl=$("#chapters"),liveCard=$("#liveCard"),liveTxt=$("#liveTxt"),
   empty=$("#empty"),dot=$("#dot"),stat=$("#stat"),recBtn=$("#rec"),ico=$("#ico"),wave=$("#wave"),
   toast=$("#toast"),overview=$("#overview"),recapBtn=$("#recapBtn"),wc=$("#wc"),
-  lvlFill=$("#lvlFill"),lvlLabel=$("#lvlLabel"),lvlDot=$("#lvlDot"),lvlText=$("#lvlText");
+  lvlFill=$("#lvlFill");
 
 function tt(m){toast.textContent=m;toast.classList.add("show");clearTimeout(tt._t);tt._t=setTimeout(()=>toast.classList.remove("show"),2200);}
 function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -1408,19 +1457,14 @@ function startWave(){
     root.setProperty("--lvl-cb",`var(${tier.cb})`);
     const pct=Math.max(.05,Math.min(1,smoothLevel/0.18));   // ring fills up to the "good" threshold
     lvlFill.style.strokeDashoffset=(RING_CIRC*(1-pct)).toFixed(1);
-    if(tier.css!==recBtn.dataset.tier){
-      recBtn.dataset.tier=tier.css;
-      lvlText.textContent=I18N[uiLang][tier.key];
-    }
+    if(tier.css!==recBtn.dataset.tier)recBtn.dataset.tier=tier.css;
     rafId=requestAnimationFrame(loop);
   };
-  lvlLabel.classList.add("show");
   loop();
 }
 function stopWave(){
   cancelAnimationFrame(rafId);
   wave.querySelectorAll("i").forEach(b=>b.style.height="6px");
-  lvlLabel.classList.remove("show");
   recBtn.dataset.tier="";
   lvlFill.style.strokeDashoffset=RING_CIRC;
 }
@@ -1575,37 +1619,97 @@ $("#export").addEventListener("click",()=>{
 });
 
 
-/* ---------- API key modal ---------- */
+/* ---------- API key modal ----------
+   The modal has its own provider tab (keyModalProvider) so the person can
+   manage either key regardless of which provider is currently active in
+   Settings — switching tabs here does NOT change settings.provider. */
+let keyModalProvider="anthropic";
+const KEY_PROVIDER_INFO={
+  anthropic:{placeholder:"sk-ant-...", link:"https://console.anthropic.com/settings/keys", linkLabel:"console.anthropic.com"},
+  glm:      {placeholder:"your GLM API key...", link:"https://open.bigmodel.cn/usercenter/apikeys", linkLabel:"open.bigmodel.cn"}
+};
 function updateKeyUI(){
   const d=I18N[uiLang],st=document.getElementById("keyStatus"),btn=document.getElementById("keyBtn");
-  const on=LLM.hasKey, art=!on&&LLM.hasArtifact;
-  if(st){st.textContent=on?d.connected:(art?d.artifactOn:d.notConnected);st.className="mstatus "+((on||art)?"ok":"off");}
-  if(btn)btn.classList.toggle("on",on);
+  const onAnthropic=keyLooksValid(getApiKey("anthropic"),"anthropic"), onGlm=keyLooksValid(getApiKey("glm"),"glm");
+  const onActive=keyModalProvider==="anthropic"?onAnthropic:onGlm;
+  const art=!onActive&&keyModalProvider==="anthropic"&&LLM.hasArtifact;
+  if(st){st.textContent=onActive?d.connected:(art?d.artifactOn:d.notConnected);st.className="mstatus "+((onActive||art)?"ok":"off");}
+  // the header key icon reflects whichever provider is active in Settings
+  const activeOn=settings.provider==="anthropic"?onAnthropic:onGlm;
+  if(btn)btn.classList.toggle("on",activeOn);
+  syncSeg("keyProviderTabs",keyModalProvider);
+  const info=KEY_PROVIDER_INFO[keyModalProvider];
+  keyInput.placeholder=info.placeholder;
+  set("t-keySub", keyModalProvider==="anthropic"?d.keySubAnthropic:d.keySubGlm);
+  document.getElementById("t-keyNote").innerHTML=(keyModalProvider==="anthropic"?d.keyNoteAnthropic:d.keyNoteGlm)
+    .replace("{link}",info.link).replace("{linkLabel}",info.linkLabel);
+  updateSetKeyStatus();
+}
+function updateSetKeyStatus(){
+  const d=I18N[uiLang],el=document.getElementById("setKeyStatus");
+  if(!el)return;
+  const on=keyLooksValid(getApiKey(settings.provider),settings.provider);
+  el.textContent=on?d.keyMiniOn:d.keyMiniOff;
+  el.className="mstatus-mini "+(on?"ok":"off");
 }
 const keyModal=$("#keyModal"),keyInput=$("#keyInput");
-function openKey(){keyInput.value=getApiKey();keyInput.type="password";updateKeyUI();keyModal.classList.add("show");}
+function openKey(provider){
+  keyModalProvider=provider||settings.provider;
+  keyInput.value=getApiKey(keyModalProvider);keyInput.type="password";
+  updateKeyUI();keyModal.classList.add("show");
+}
 function closeKey(){keyModal.classList.remove("show");}
-$("#keyBtn").addEventListener("click",openKey);
+$("#keyBtn").addEventListener("click",()=>openKey(settings.provider));
 $("#keyClose").addEventListener("click",closeKey);
 keyModal.addEventListener("click",e=>{if(e.target===keyModal)closeKey();});
 $("#keyEye").addEventListener("click",()=>{keyInput.type=keyInput.type==="password"?"text":"password";});
+$("#keyProviderTabs").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  keyModalProvider=b.dataset.v;
+  keyInput.value=getApiKey(keyModalProvider);keyInput.type="password";
+  updateKeyUI();
+});
 $("#keySave").addEventListener("click",()=>{
   const k=keyInput.value.trim();
-  if(k&&!/^sk-/.test(k)){tt(I18N[uiLang].keyBad);return;}
-  setApiKey(k);updateKeyUI();tt(k?I18N[uiLang].keySaved:I18N[uiLang].keyRemoved);
+  if(k&&!keyLooksValid(k,keyModalProvider)){tt(I18N[uiLang].keyBad);return;}
+  setApiKey(k,keyModalProvider);updateKeyUI();tt(k?I18N[uiLang].keySaved:I18N[uiLang].keyRemoved);
   if(k)closeKey();
 });
-$("#keyClear").addEventListener("click",()=>{setApiKey("");keyInput.value="";updateKeyUI();tt(I18N[uiLang].keyRemoved);});
+$("#keyClear").addEventListener("click",()=>{setApiKey("",keyModalProvider);keyInput.value="";updateKeyUI();tt(I18N[uiLang].keyRemoved);});
 
 /* ---------- Settings modal ---------- */
 const setModal=$("#setModal");
 function syncSeg(id,val){const el=$("#"+id);if(el)[...el.children].forEach(x=>x.classList.toggle("on",x.dataset.v===String(val)));}
-function syncSettings(){syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setNq",settings.nq);syncSeg("setChap",settings.chap);syncSeg("setSpeech",settings.speech);syncSeg("setOut",settings.out);syncSeg("setSplit",settings.split?1:0);$("#chapLenGroup").style.display=settings.split?"":"none";}
+function syncSettings(){
+  syncSeg("setProvider",settings.provider);syncSeg("setModel",settings.model);syncSeg("setVerb",settings.verb);syncSeg("setNq",settings.nq);
+  syncSeg("setChap",settings.chap);syncSeg("setSpeech",settings.speech);syncSeg("setOut",settings.out);syncSeg("setSplit",settings.split?1:0);
+  $("#chapLenGroup").style.display=settings.split?"":"none";
+  applyModelTierLabels();
+  updateSetKeyStatus();
+}
+/* Tier sublabels depend on which provider is selected, since the real model
+   names differ — keep the Fast/Balanced/Advanced concept but swap captions. */
+function applyModelTierLabels(){
+  const d=I18N[uiLang], glm=settings.provider==="glm";
+  set("t-mFastS", glm?d.mFastSGlm:d.mFastS);
+  set("t-mBalS",  glm?d.mBalSGlm:d.mBalS);
+  set("t-mAdvS",  glm?d.mAdvSGlm:d.mAdvS);
+}
 function openSet(){syncSettings();setModal.classList.add("show");}
 function closeSet(){setModal.classList.remove("show");}
 $("#setBtn").addEventListener("click",openSet);
 $("#setClose").addEventListener("click",closeSet);
 setModal.addEventListener("click",e=>{if(e.target===setModal)closeSet();});
+$("#setProvider").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  saveSetting("provider",b.dataset.v);
+  syncSeg("setProvider",settings.provider);
+  applyModelTierLabels();
+  updateSetKeyStatus();
+  updateKeyUI();
+  tt(I18N[uiLang].saved);
+});
+$("#setKeyBtn").addEventListener("click",()=>{closeSet();openKey(settings.provider);});
 function bindSeg(id,key,cast){
   $("#"+id).addEventListener("click",e=>{
     const b=e.target.closest("button");if(!b)return;
@@ -1642,7 +1746,7 @@ $("#setSpeech").addEventListener("click",e=>{
 $("#setOut").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
   saveSetting("out",b.dataset.v);uiLang=settings.out;
-  applyUI();refreshChapters();syncSettings();
+  applyUI();refreshChapters();syncSettings();updateKeyUI();
   tt(I18N[uiLang].saved);
 });
 
